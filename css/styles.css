@@ -1,0 +1,99 @@
+body {
+    font-family: Arial, sans-serif;
+    background-color: #f8f9fa;
+}
+
+.navbar {
+    box-shadow: 0 2px 4px rgba(0,0,0,.1);
+}
+
+.card {
+    box-shadow: 0 4px 6px rgba(0,0,0,.1);
+    border: none;
+    border-radius: 8px;
+    transition: all 0.3s ease;
+}
+
+.card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 6px 12px rgba(0,0,0,.15);
+}
+
+#categoriesTable, #filesTable {
+    margin-top: 20px;
+    background-color: white;
+    border-radius: 8px;
+    overflow: hidden;
+}
+
+.handsontable {
+    font-size: 14px;
+}
+
+.handsontable th {
+    background-color: #f1f3f5;
+    font-weight: bold;
+    color: #495057;
+}
+
+.handsontable td {
+    padding: 8px;
+    border-color: #e9ecef;
+}
+
+.handsontable .htDimmed {
+    color: #6c757d;
+}
+
+.modal-content {
+    border-radius: 8px;
+}
+
+.btn-primary {
+    background-color: #007bff;
+    border-color: #007bff;
+}
+
+.btn-primary:hover {
+    background-color: #0056b3;
+ }
+
+ #categoriesTable {
+     margin-top: 20px;
+ }
+ 
+ .handsontable {
+     font-size: 14px;
+ }
+ 
+ .handsontable .htCore {
+     border: 1px solid #dee2e6;
+ }
+ 
+ .handsontable th {
+     background-color: #f8f9fa;
+     font-weight: bold;
+     color: #495057;
+     text-align: center;
+ }
+ 
+ .handsontable td {
+     border-color: #dee2e6;
+ }
+ 
+ .handsontable .btn-danger {
+     background-color: #dc3545;
+     border-color: #dc3545;
+     color: white;
+     padding: 2px 8px;
+     font-size: 12px;
+ }
+ 
+ .handsontable .btn-danger:hover {
+     background-color: #c82333;
+     border-color: #bd2130;
+ }
+ 
+ .htCenter .htCore td {
+     text-align: center;
+ }
