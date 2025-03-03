@@ -245,8 +245,51 @@ document.getElementById('addCategoryModal').addEventListener('show.bs.modal', fu
     document.getElementById('categoryName').value = '';
 });
 
+document.getElementById('addCategoryModal').addEventListener('show.bs.modal', function() {
+    document.getElementById('categoryName').value = '';
+});
 
-// Ctrl+Shift+[ : Plegar la región actual
+// Agregar este nuevo event listener
+document.getElementById('categoryName').addEventListener('keypress', function(event) {
+    if (event.key === 'Enter') {
+        event.preventDefault(); // Prevenir el comportamiento por defecto del formulario
+        saveCategory();
+    }
+});
+
+document.getElementById('saveCategoryBtn').addEventListener('click', saveCategory);
+
+function saveCategory() {
+    const categoryName = document.getElementById('categoryName').value;
+    if (categoryName) {
+        const token = localStorage.getItem('token');
+        fetch('api/categories.php', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${token}`,
+            },
+            body: JSON.stringify({ name: categoryName }),
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                loadCategories();
+                document.getElementById('categoryName').value = '';
+                const modal = bootstrap.Modal.getInstance(document.getElementById('addCategoryModal'));
+                modal.hide();
+            } else {
+                showAlert('Error al agregar categoría: ' + data.message, 'error');
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            showAlert('Error al agregar categoría', 'error');
+        });
+    }
+}
+
+
 //     Ctrl+Shift+] : Desplegar la región actual
 //     Ctrl+K Ctrl+[ : Plegar todas las subregiones
 //     Ctrl+K Ctrl+] : Desplegar todas las subregiones

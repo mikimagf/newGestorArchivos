@@ -97,3 +97,49 @@ body {
  .htCenter .htCore td {
      text-align: center;
  }
+ .custom-alert {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    background-color: white;
+    border-radius: 8px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+    display: flex;
+    align-items: center;
+    padding: 12px 20px;
+    opacity: 0;
+    transform: translateY(-20px);
+    transition: opacity 0.3s, transform 0.3s;
+    z-index: 9999;
+}
+
+.custom-alert.show {
+    opacity: 1;
+    transform: translateY(0);
+}
+
+.custom-alert-icon {
+    width: 24px;
+    height: 24px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: bold;
+    margin-right: 12px;
+}
+
+.custom-alert-icon.success {
+    background-color: #4CAF50;
+    color: white;
+}
+
+.custom-alert-icon.error {
+    background-color: #F44336;
+    color: white;
+}
+
+.custom-alert-message {
+    font-size: 14px;
+    color: #333;
+}
