@@ -1,5 +1,3 @@
-
-
 let categoriesTable;
 let allCategories = [];
 
@@ -25,6 +23,7 @@ function loadCategories() {
         showAlert('Error al cargar categorías', 'error');
     });
 }
+
 function filterAndRenderCategories() {
     const searchTerm = document.getElementById('categorySearch').value.toLowerCase();
     const pageSize = parseInt(document.getElementById('categoryPageSize').value);
@@ -33,12 +32,14 @@ function filterAndRenderCategories() {
         category.name.toLowerCase().includes(searchTerm)
     );
 
-    renderCategoriesTable(filteredCategories.slice(0, pageSize));
+    renderCategoriesTable(filteredCategories);
 }
+
 document.getElementById('categorySearch').addEventListener('input', filterAndRenderCategories);
 document.getElementById('categoryPageSize').addEventListener('change', filterAndRenderCategories);
-// Llama a loadCategories cuando se carga la página
+
 document.addEventListener('DOMContentLoaded', loadCategories);
+
 function renderCategoriesTable(categories) {
     const container = document.getElementById('categoriesTable');
     if (categoriesTable) {
@@ -65,34 +66,39 @@ function renderCategoriesTable(categories) {
         height: 'auto',
         stretchH: 'all',
         className: 'htCenter',
-        licenseKey: 'non-commercial-and-evaluation'
-    });
-}
-
-function renderCategoriesTable(categories) {
-    const container = document.getElementById('categoriesTable');
-    if (categoriesTable) {
-        categoriesTable.destroy();
-    }
-    categoriesTable = new Handsontable(container, {
-        data: categories,
-        columns: [
-            { data: 'id', title: 'ID', readOnly: true },
-            { data: 'name', title: 'Nombre' },
-            {
-                data: 'actions',
-                title: 'Acciones',
-                renderer: function(instance, td, row, col, prop, value, cellProperties) {
-                    const deleteBtn = `<button class="btn btn-danger btn-sm" onclick="deleteCategory(${categories[row].id})">Eliminar</button>`;
-                    td.innerHTML = deleteBtn;
-                    return td;
+        licenseKey: 'non-commercial-and-evaluation',
+        pageLength: 10,
+        language: 'es-ES',
+        pagination: true,
+        paginationOptions: {
+            pageLength: 10,
+            lengthMenu: [[10, 25, 50, -1], [10, 25, 50, "Todos"]]
+        },
+        dropdownMenu: true,
+        filters: true,
+        contextMenu: true,
+        manualColumnResize: true,
+        manualRowResize: true,
+        autoColumnSize: true,
+        autoRowSize: true,
+        i18n: {
+            'es-ES': {
+                'pageNext': 'Siguiente página',
+                'pagePrevious': 'Página anterior',
+                'pageOf': 'de',
+                'rows': 'Filas',
+                'rowsPerPage': 'Filas por página',
+                'dropdownMenuButton': 'Abrir menú',
+                'filterConditions': {
+                    'contains': 'Contiene',
+                    'not_contains': 'No contiene',
+                    'begins_with': 'Comienza con',
+                    'ends_with': 'Termina con',
+                    'eq': 'Igual a',
+                    'neq': 'No igual a'
                 }
             }
-        ],
-        rowHeaders: true,
-        colHeaders: true,
-        height: 'auto',
-        licenseKey: 'non-commercial-and-evaluation'
+        }
     });
 }
 
@@ -143,38 +149,7 @@ document.getElementById('saveCategoryBtn').addEventListener('click', function() 
         .then(data => {
             if (data.success) {
                 loadCategories();
-                const modal = bootstrap.Modal.getInstance(document.getElementById('addCategoryModal'));
-                modal.hide();
-            } else {
-                alert('Error al agregar categoría: ' + data.message);
-            }
-        })
-        .catch(error => {
-            console.error('Error:', error);
-            alert('Error al agregar categoría');
-        });
-    }
-}); 
-
-document.getElementById('saveCategoryBtn').addEventListener('click', function() {
-    const categoryName = document.getElementById('categoryName').value;
-    if (categoryName) {
-        const token = localStorage.getItem('token');
-        fetch('api/categories.php', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'Authorization': `Bearer ${token}`,
-            },
-            body: JSON.stringify({ name: categoryName }),
-        })
-        .then(response => response.json())
-        .then(data => {
-            if (data.success) {
-                loadCategories();
-                // Limpiar el campo de entrada
                 document.getElementById('categoryName').value = '';
-                // Cerrar el modal
                 const modal = bootstrap.Modal.getInstance(document.getElementById('addCategoryModal'));
                 modal.hide();
             } else {
@@ -188,15 +163,10 @@ document.getElementById('saveCategoryBtn').addEventListener('click', function() 
     }
 });
 
-// Agregar este evento para limpiar el campo cuando se abre el modal
 document.getElementById('addCategoryModal').addEventListener('show.bs.modal', function() {
     document.getElementById('categoryName').value = '';
 });
 
-
-// Ctrl+Shift+[ : Plegar la región actual
-//     Ctrl+Shift+] : Desplegar la región actual
-//     Ctrl+K Ctrl+[ : Plegar todas las subregiones
-//     Ctrl+K Ctrl+] : Desplegar todas las subregiones
-//     Ctrl+K Ctrl+0 : Plegar todas las regiones
-//     Ctrl+K Ctrl+J : Desplegar todas las regiones
+function showAlert(message, type) {
+    alert(message);
+}
