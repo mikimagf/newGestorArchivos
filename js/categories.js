@@ -1,4 +1,4 @@
-
+import { showAlert } from './utils.js';
 
 let categoriesTable;
 let allCategories = [];
@@ -29,27 +29,32 @@ let itemsPerPage = 10;
 //         showAlert('Error al cargar categorías', 'error');
 //     });
 // }
-function loadCategories() {
+async function getShowCustomAlert() {
+    const utils = await import('./utils.js');
+    return utils.showCustomAlert;
+}
+async function loadCategories() {
     const token = localStorage.getItem('token');
-    fetch('api/categories.php', {
-        method: 'GET',
-        headers: {
-            'Authorization': `Bearer ${token}`,
-        },
-    })
-    .then(response => response.json())
-    .then(data => {
+    try {
+        const response = await fetch('api/categories.php', {
+            method: 'GET',
+            headers: {
+                'Authorization': `Bearer ${token}`,
+            },
+        });
+        const data = await response.json();
         if (data.success) {
             allCategories = data.categories;
             filterAndRenderCategories();
         } else {
-            showAlert('Error al cargar categorías: ' + data.message, 'error');
+            const showCustomAlert = await getShowCustomAlert();
+            showCustomAlert('Error al cargar categorías: ' + data.message, 'error');
         }
-    })
-    .catch(error => {
+    } catch (error) {
         console.error('Error:', error);
-        showAlert('Error al cargar categorías', 'error');
-    });
+        const showCustomAlert = await getShowCustomAlert();
+        showCustomAlert('Error al cargar categorías', 'error');
+    }
 }
 function filterAndRenderCategories() {
     const searchTerm = document.getElementById('categorySearch').value.toLowerCase();
@@ -121,32 +126,6 @@ function renderCategoriesTable(categories) {
     });
 }
 
-function renderCategoriesTable(categories) {
-    const container = document.getElementById('categoriesTable');
-    if (categoriesTable) {
-        categoriesTable.destroy();
-    }
-    categoriesTable = new Handsontable(container, {
-        data: categories,
-        columns: [
-            { data: 'id', title: 'ID', readOnly: true },
-            { data: 'name', title: 'Nombre' },
-            {
-                data: 'actions',
-                title: 'Acciones',
-                renderer: function(instance, td, row, col, prop, value, cellProperties) {
-                    const deleteBtn = `<button class="btn btn-danger btn-sm" onclick="deleteCategory(${categories[row].id})">Eliminar</button>`;
-                    td.innerHTML = deleteBtn;
-                    return td;
-                }
-            }
-        ],
-        rowHeaders: true,
-        colHeaders: true,
-        height: 'auto',
-        licenseKey: 'non-commercial-and-evaluation'
-    });
-}
 
 function deleteCategory(id) {
     if (confirm('¿Estás seguro de que quieres eliminar esta categoría?')) {
@@ -178,68 +157,39 @@ document.getElementById('addCategoryBtn').addEventListener('click', function() {
     const modal = new bootstrap.Modal(document.getElementById('addCategoryModal'));
     modal.show();
 });
-
-document.getElementById('saveCategoryBtn').addEventListener('click', function() {
+ 
+document.getElementById('saveCategoryBtn').addEventListener('click', async function() {
     const categoryName = document.getElementById('categoryName').value;
     if (categoryName) {
         const token = localStorage.getItem('token');
-        fetch('api/categories.php', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'Authorization': `Bearer ${token}`,
-            },
-            body: JSON.stringify({ name: categoryName }),
-        })
-        .then(response => response.json())
-        .then(data => {
+        try {
+            const response = await fetch('api/categories.php', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${token}`,
+                },
+                body: JSON.stringify({ name: categoryName }),
+            });
+            const data = await response.json();
             if (data.success) {
-                loadCategories();
+                await loadCategories();
                 const modal = bootstrap.Modal.getInstance(document.getElementById('addCategoryModal'));
                 modal.hide();
-            } else {
-                alert('Error al agregar categoría: ' + data.message);
-            }
-        })
-        .catch(error => {
-            console.error('Error:', error);
-            alert('Error al agregar categoría');
-        });
-    }
-}); 
-
-document.getElementById('saveCategoryBtn').addEventListener('click', function() {
-    const categoryName = document.getElementById('categoryName').value;
-    if (categoryName) {
-        const token = localStorage.getItem('token');
-        fetch('api/categories.php', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'Authorization': `Bearer ${token}`,
-            },
-            body: JSON.stringify({ name: categoryName }),
-        })
-        .then(response => response.json())
-        .then(data => {
-            if (data.success) {
-                loadCategories();
-                // Limpiar el campo de entrada
                 document.getElementById('categoryName').value = '';
-                // Cerrar el modal
-                const modal = bootstrap.Modal.getInstance(document.getElementById('addCategoryModal'));
-                modal.hide();
+                const showCustomAlert = await getShowCustomAlert();
+                showCustomAlert('Categoría agregada con éxito', 'success');
             } else {
-                alert('Error al agregar categoría: ' + data.message);
+                const showCustomAlert = await getShowCustomAlert();
+                showCustomAlert('Error al agregar categoría: ' + data.message, 'error');
             }
-        })
-        .catch(error => {
+        } catch (error) {
             console.error('Error:', error);
-            alert('Error al agregar categoría');
-        });
+            const showCustomAlert = await getShowCustomAlert();
+            showCustomAlert('Error al agregar categoría', 'error');
+        }
     }
 });
-
 // Agregar este evento para limpiar el campo cuando se abre el modal
 document.getElementById('addCategoryModal').addEventListener('show.bs.modal', function() {
     document.getElementById('categoryName').value = '';
@@ -277,6 +227,7 @@ function saveCategory() {
                 loadCategories();
                 document.getElementById('categoryName').value = '';
                 const modal = bootstrap.Modal.getInstance(document.getElementById('addCategoryModal'));
+                showCustomAlert('Categoría agregada con éxito', 'success');
                 modal.hide();
             } else {
                 showAlert('Error al agregar categoría: ' + data.message, 'error');
@@ -290,7 +241,6 @@ function saveCategory() {
 }
 
 
-//     Ctrl+Shift+] : Desplegar la región actual
 //     Ctrl+K Ctrl+[ : Plegar todas las subregiones
 //     Ctrl+K Ctrl+] : Desplegar todas las subregiones
 //     Ctrl+K Ctrl+0 : Plegar todas las regiones

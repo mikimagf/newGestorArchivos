@@ -58,9 +58,21 @@ function requireAuth() {
         window.location.href = 'index';
     }
 }
-
+ function showCustomAlert(message, type = 'success') {
+    // Implementación de la alerta personalizada
+    const alertElement = document.createElement('div');
+    alertElement.className = `custom-alert alert alert-${type}`;
+    alertElement.textContent = message;
+    
+    document.body.appendChild(alertElement);
+    
+    setTimeout(() => {
+        alertElement.remove();
+    }, 3000);
+}
 // Exportar las funciones para que estén disponibles en otros archivos
 export {
+    showCustomAlert,
     showAlert,
     formatDate,
     isValidEmail,
