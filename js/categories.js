@@ -14,29 +14,7 @@ let currentPage = 1;
 let itemsPerPage = 10;
 // const itemsPerPage = 10; // Puedes ajustar este valor según tus necesidades
 
-// function loadCategories() {
-//     const token = localStorage.getItem('token');
-//     fetch('api/categories.php', {
-//         method: 'GET',
-//         headers: {
-//             'Authorization': `Bearer ${token}`,
-//         },
-//     })
-//     .then(response => response.json())
-//     .then(data => {
-//         if (data.success) {
-//             allCategories = data.categories;
-//             filterAndRenderCategories();
-//             renderPagination();
-//         } else {
-//             showAlert('Error al cargar categorías: ' + data.message, 'error');
-//         }
-//     })
-//     .catch(error => {
-//         console.error('Error:', error);
-//         showAlert('Error al cargar categorías', 'error');
-//     });
-// }
+
 async function getShowCustomAlert() {
     const utils = await import('./utils.js');
     return utils.showCustomAlert;
@@ -54,6 +32,7 @@ window.loadCategories=async function () {
         if (data.success) {
             allCategories = data.categories;
             filterAndRenderCategories();
+            console.log('Categories loaded successfully. Total:', allCategories.length);
         } else {
             const showCustomAlert = await getShowCustomAlert();
             showCustomAlert('Error al cargar categorías: ' + data.message, 'error');
@@ -79,19 +58,79 @@ function filterAndRenderCategories() {
 
     renderCategoriesTable(categoriesToRender);
     renderPagination(filteredCategories.length);
+    console.log('Categories filtered and rendered. Total:', filteredCategories.length);
 }
 
 function renderPagination(totalItems) {
-    const totalPages = Math.ceil(totalItems / itemsPerPage);
-    const paginationElement = document.getElementById('categoriesPagination');
-    let paginationHTML = '';
-
-    for (let i = 1; i <= totalPages; i++) {
-        paginationHTML += `<button class="btn btn-sm ${i === currentPage ? 'btn-primary' : 'btn-outline-primary'}" onclick="changePage(${i})">${i}</button> `;
+    console.log('Rendering pagination. Total items:', totalItems);
+    const paginationElement = document.getElementById('pagination');
+    if (!paginationElement) {
+        console.error('Elemento de paginación no encontrado');
+        return;
     }
 
+    const totalPages = Math.ceil(totalItems / itemsPerPage);
+    console.log('Total pages:', totalPages, 'Current page:', currentPage, 'Items per page:', itemsPerPage);
+
+    if (totalPages <= 1) {
+        paginationElement.innerHTML = '';
+        return;
+    }
+
+    let paginationHTML = '<nav aria-label="Page navigation"><ul class="pagination">';
+
+    // Botón para ir a la primera página
+    paginationHTML += `<li class="page-item ${currentPage === 1 ? 'disabled' : ''}">
+        <a class="page-link" href="#" onclick="changePage(1)" aria-label="First">
+            <span aria-hidden="true">&laquo;&laquo;</span>
+        </a>
+    </li>`;
+
+    // Botón para página anterior
+    paginationHTML += `<li class="page-item ${currentPage === 1 ? 'disabled' : ''}">
+        <a class="page-link" href="#" onclick="changePage(${currentPage - 1})" aria-label="Previous">
+            <span aria-hidden="true">&laquo;</span>
+        </a>
+    </li>`;
+
+    // Páginas numeradas
+    const maxPagesToShow = 5;
+    let startPage = Math.max(1, currentPage - Math.floor(maxPagesToShow / 2));
+    let endPage = Math.min(totalPages, startPage + maxPagesToShow - 1);
+
+    if (endPage - startPage + 1 < maxPagesToShow) {
+        startPage = Math.max(1, endPage - maxPagesToShow + 1);
+    }
+
+    for (let i = startPage; i <= endPage; i++) {
+        paginationHTML += `<li class="page-item ${i === currentPage ? 'active' : ''}">
+            <a class="page-link" href="#" onclick="changePage(${i})">${i}</a>
+        </li>`;
+    }
+
+    // Botón para página siguiente
+    paginationHTML += `<li class="page-item ${currentPage === totalPages ? 'disabled' : ''}">
+        <a class="page-link" href="#" onclick="changePage(${currentPage + 1})" aria-label="Next">
+            <span aria-hidden="true">&raquo;</span>
+        </a>
+    </li>`;
+
+    // Botón para ir a la última página
+    paginationHTML += `<li class="page-item ${currentPage === totalPages ? 'disabled' : ''}">
+        <a class="page-link" href="#" onclick="changePage(${totalPages})" aria-label="Last">
+            <span aria-hidden="true">&raquo;&raquo;</span>
+        </a>
+    </li>`;
+
+    paginationHTML += '</ul></nav>';
+
+    // Contador de registros
+    paginationHTML += `<div class="mt-2">Página ${currentPage} de ${totalPages} (${totalItems} registros)</div>`;
+
     paginationElement.innerHTML = paginationHTML;
+    console.log('Pagination HTML rendered');
 }
+
 function changePage(page) {
     currentPage = page;
     filterAndRenderCategories();
@@ -253,4 +292,12 @@ function saveCategory() {
 
 window.deleteCategory = deleteCategory;
 window.changePage = changePage;
-document.addEventListener('DOMContentLoaded', loadCategories);
+document.addEventListener('DOMContentLoaded', function() {
+    loadCategories();
+    
+    document.getElementById('categorySearch').addEventListener('input', filterAndRenderCategories);
+    document.getElementById('categoryPageSize').addEventListener('change', () => {
+        currentPage = 1;
+        filterAndRenderCategories();
+    });
+});
