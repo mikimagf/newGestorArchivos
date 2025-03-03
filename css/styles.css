@@ -1,12 +1,15 @@
+/* Estilos generales */
 body {
     font-family: Arial, sans-serif;
     background-color: #f8f9fa;
 }
 
+/* Navbar */
 .navbar {
     box-shadow: 0 2px 4px rgba(0,0,0,.1);
 }
 
+/* Cards */
 .card {
     box-shadow: 0 4px 6px rgba(0,0,0,.1);
     border: none;
@@ -19,6 +22,7 @@ body {
     box-shadow: 0 6px 12px rgba(0,0,0,.15);
 }
 
+/* Tablas */
 #categoriesTable, #filesTable {
     margin-top: 20px;
     background-color: white;
@@ -26,29 +30,54 @@ body {
     overflow: hidden;
 }
 
+/* Handsontable */
 .handsontable {
     font-size: 14px;
 }
 
+.handsontable .htCore {
+    border: 1px solid #dee2e6;
+}
+
 .handsontable th {
-    background-color: #f1f3f5;
+    background-color: #f8f9fa;
     font-weight: bold;
     color: #495057;
+    text-align: center;
 }
 
 .handsontable td {
     padding: 8px;
-    border-color: #e9ecef;
+    border-color: #dee2e6;
 }
 
 .handsontable .htDimmed {
     color: #6c757d;
 }
 
+.handsontable .btn-danger {
+    background-color: #dc3545;
+    border-color: #dc3545;
+    color: white;
+    padding: 2px 8px;
+    font-size: 12px;
+}
+
+.handsontable .btn-danger:hover {
+    background-color: #c82333;
+    border-color: #bd2130;
+}
+
+.htCenter .htCore td {
+    text-align: center;
+}
+
+/* Modales */
 .modal-content {
     border-radius: 8px;
 }
 
+/* Botones */
 .btn-primary {
     background-color: #007bff;
     border-color: #007bff;
@@ -56,48 +85,10 @@ body {
 
 .btn-primary:hover {
     background-color: #0056b3;
- }
+}
 
- #categoriesTable {
-     margin-top: 20px;
- }
- 
- .handsontable {
-     font-size: 14px;
- }
- 
- .handsontable .htCore {
-     border: 1px solid #dee2e6;
- }
- 
- .handsontable th {
-     background-color: #f8f9fa;
-     font-weight: bold;
-     color: #495057;
-     text-align: center;
- }
- 
- .handsontable td {
-     border-color: #dee2e6;
- }
- 
- .handsontable .btn-danger {
-     background-color: #dc3545;
-     border-color: #dc3545;
-     color: white;
-     padding: 2px 8px;
-     font-size: 12px;
- }
- 
- .handsontable .btn-danger:hover {
-     background-color: #c82333;
-     border-color: #bd2130;
- }
- 
- .htCenter .htCore td {
-     text-align: center;
- }
- .custom-alert {
+/* Alertas personalizadas */
+.custom-alert {
     position: fixed;
     top: 20px;
     right: 20px;
@@ -142,4 +133,29 @@ body {
 .custom-alert-message {
     font-size: 14px;
     color: #333;
+}
+
+/* Estilos para la sección de categorías */
+#categoriesContent .d-flex {
+    margin-top: 1rem;
+}
+
+#categoriesContent #pagination {
+    display: inline-block;
+}
+
+#categoriesContent #categoryPageSize {
+    width: auto;
+    min-width: 70px;
+}
+
+#categoriesContent .form-select-sm {
+    padding-top: 0.25rem;
+    padding-bottom: 0.25rem;
+    font-size: 0.875rem;
+}
+
+/* Ajuste para alinear la paginación y el selector */
+#categoriesContent .d-flex.align-items-center {
+    gap: 1rem;
 }
