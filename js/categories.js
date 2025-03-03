@@ -2,7 +2,33 @@
 
 let categoriesTable;
 let allCategories = [];
+let currentPage = 1;
+let itemsPerPage = 10;
+// const itemsPerPage = 10; // Puedes ajustar este valor según tus necesidades
 
+// function loadCategories() {
+//     const token = localStorage.getItem('token');
+//     fetch('api/categories.php', {
+//         method: 'GET',
+//         headers: {
+//             'Authorization': `Bearer ${token}`,
+//         },
+//     })
+//     .then(response => response.json())
+//     .then(data => {
+//         if (data.success) {
+//             allCategories = data.categories;
+//             filterAndRenderCategories();
+//             renderPagination();
+//         } else {
+//             showAlert('Error al cargar categorías: ' + data.message, 'error');
+//         }
+//     })
+//     .catch(error => {
+//         console.error('Error:', error);
+//         showAlert('Error al cargar categorías', 'error');
+//     });
+// }
 function loadCategories() {
     const token = localStorage.getItem('token');
     fetch('api/categories.php', {
@@ -27,16 +53,42 @@ function loadCategories() {
 }
 function filterAndRenderCategories() {
     const searchTerm = document.getElementById('categorySearch').value.toLowerCase();
-    const pageSize = parseInt(document.getElementById('categoryPageSize').value);
+    itemsPerPage = parseInt(document.getElementById('categoryPageSize').value);
     
     const filteredCategories = allCategories.filter(category => 
         category.name.toLowerCase().includes(searchTerm)
     );
 
-    renderCategoriesTable(filteredCategories.slice(0, pageSize));
+    const startIndex = (currentPage - 1) * itemsPerPage;
+    const endIndex = startIndex + itemsPerPage;
+    const categoriesToRender = filteredCategories.slice(startIndex, endIndex);
+
+    renderCategoriesTable(categoriesToRender);
+    renderPagination(filteredCategories.length);
 }
+
+function renderPagination(totalItems) {
+    const totalPages = Math.ceil(totalItems / itemsPerPage);
+    const paginationElement = document.getElementById('categoriesPagination');
+    let paginationHTML = '';
+
+    for (let i = 1; i <= totalPages; i++) {
+        paginationHTML += `<button class="btn btn-sm ${i === currentPage ? 'btn-primary' : 'btn-outline-primary'}" onclick="changePage(${i})">${i}</button> `;
+    }
+
+    paginationElement.innerHTML = paginationHTML;
+}
+function changePage(page) {
+    currentPage = page;
+    filterAndRenderCategories();
+}
+// Asegúrate de que estos event listeners estén presentes
 document.getElementById('categorySearch').addEventListener('input', filterAndRenderCategories);
-document.getElementById('categoryPageSize').addEventListener('change', filterAndRenderCategories);
+document.getElementById('categoryPageSize').addEventListener('change', () => {
+    currentPage = 1;
+    filterAndRenderCategories();
+});
+
 // Llama a loadCategories cuando se carga la página
 document.addEventListener('DOMContentLoaded', loadCategories);
 function renderCategoriesTable(categories) {
