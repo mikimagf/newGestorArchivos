@@ -1,4 +1,12 @@
-import { showAlert } from './utils.js';
+import { showCustomAlert, showCustomConfirm } from './utils.js';
+
+async function getAlertFunctions() {
+    const utils = await import('./utils.js');
+    return {
+        showAlert: utils.showAlert,
+        showCustomAlert: utils.showCustomAlert
+    };
+}
 
 let categoriesTable;
 let allCategories = [];
@@ -33,7 +41,7 @@ async function getShowCustomAlert() {
     const utils = await import('./utils.js');
     return utils.showCustomAlert;
 }
-async function loadCategories() {
+window.loadCategories=async function () {
     const token = localStorage.getItem('token');
     try {
         const response = await fetch('api/categories.php', {
@@ -56,6 +64,7 @@ async function loadCategories() {
         showCustomAlert('Error al cargar categorías', 'error');
     }
 }
+
 function filterAndRenderCategories() {
     const searchTerm = document.getElementById('categorySearch').value.toLowerCase();
     itemsPerPage = parseInt(document.getElementById('categoryPageSize').value);
@@ -126,30 +135,37 @@ function renderCategoriesTable(categories) {
     });
 }
 
+async function deleteCategory(id) {
+    console.log(`Eliminar la categoria: ${id}`);
+    
+    const result = await showCustomConfirm('¿Estás seguro de que quieres eliminar esta categoría?');
 
-function deleteCategory(id) {
-    if (confirm('¿Estás seguro de que quieres eliminar esta categoría?')) {
+    if (result.isConfirmed) {
         const token = localStorage.getItem('token');
-        fetch('api/categories.php', {
-            method: 'DELETE',
-            headers: {
-                'Content-Type': 'application/json',
-                'Authorization': `Bearer ${token}`,
-            },
-            body: JSON.stringify({ id: id }),
-        })
-        .then(response => response.json())
-        .then(data => {
+        try {
+            const response = await fetch('api/categories.php', {
+                method: 'DELETE',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${token}`,
+                },
+                body: JSON.stringify({ id: id }),
+            });
+            const data = await response.json();
             if (data.success) {
-                loadCategories();
+                if (typeof loadCategories === 'function') {
+                    await loadCategories();
+                } else {
+                    console.error('loadCategories is not defined');
+                }
+                showCustomAlert('Categoría eliminada con éxito', 'success');
             } else {
-                alert('Error al eliminar categoría: ' + data.message);
+                showCustomAlert('Error al eliminar categoría: ' + data.message, 'error');
             }
-        })
-        .catch(error => {
+        } catch (error) {
             console.error('Error:', error);
-            alert('Error al eliminar categoría');
-        });
+            showCustomAlert('Error al eliminar categoría', 'error');
+        }
     }
 }
 
@@ -177,15 +193,12 @@ document.getElementById('saveCategoryBtn').addEventListener('click', async funct
                 const modal = bootstrap.Modal.getInstance(document.getElementById('addCategoryModal'));
                 modal.hide();
                 document.getElementById('categoryName').value = '';
-                const showCustomAlert = await getShowCustomAlert();
                 showCustomAlert('Categoría agregada con éxito', 'success');
             } else {
-                const showCustomAlert = await getShowCustomAlert();
                 showCustomAlert('Error al agregar categoría: ' + data.message, 'error');
             }
         } catch (error) {
             console.error('Error:', error);
-            const showCustomAlert = await getShowCustomAlert();
             showCustomAlert('Error al agregar categoría', 'error');
         }
     }
@@ -240,8 +253,4 @@ function saveCategory() {
     }
 }
 
-
-//     Ctrl+K Ctrl+[ : Plegar todas las subregiones
-//     Ctrl+K Ctrl+] : Desplegar todas las subregiones
-//     Ctrl+K Ctrl+0 : Plegar todas las regiones
-//     Ctrl+K Ctrl+J : Desplegar todas las regiones
+window.deleteCategory = deleteCategory;
