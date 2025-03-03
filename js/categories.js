@@ -103,8 +103,6 @@ document.getElementById('categoryPageSize').addEventListener('change', () => {
     filterAndRenderCategories();
 });
 
-// Llama a loadCategories cuando se carga la página
-document.addEventListener('DOMContentLoaded', loadCategories);
 function renderCategoriesTable(categories) {
     const container = document.getElementById('categoriesTable');
     if (categoriesTable) {
@@ -198,7 +196,7 @@ document.getElementById('saveCategoryBtn').addEventListener('click', async funct
                 showCustomAlert('Error al agregar categoría: ' + data.message, 'error');
             }
         } catch (error) {
-            console.error('Error:', error);
+            console.error('Error:', error); 
             showCustomAlert('Error al agregar categoría', 'error');
         }
     }
@@ -254,3 +252,5 @@ function saveCategory() {
 }
 
 window.deleteCategory = deleteCategory;
+window.changePage = changePage;
+document.addEventListener('DOMContentLoaded', loadCategories);
