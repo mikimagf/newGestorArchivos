@@ -1,6 +1,7 @@
-// @ts-nocheck
+
 
 let categoriesTable;
+let allCategories = [];
 
 function loadCategories() {
     const token = localStorage.getItem('token');
@@ -13,14 +14,58 @@ function loadCategories() {
     .then(response => response.json())
     .then(data => {
         if (data.success) {
-            renderCategoriesTable(data.categories);
+            allCategories = data.categories;
+            filterAndRenderCategories();
         } else {
-            alert('Error al cargar categorías: ' + data.message);
+            showAlert('Error al cargar categorías: ' + data.message, 'error');
         }
     })
     .catch(error => {
         console.error('Error:', error);
-        alert('Error al cargar categorías');
+        showAlert('Error al cargar categorías', 'error');
+    });
+}
+function filterAndRenderCategories() {
+    const searchTerm = document.getElementById('categorySearch').value.toLowerCase();
+    const pageSize = parseInt(document.getElementById('categoryPageSize').value);
+    
+    const filteredCategories = allCategories.filter(category => 
+        category.name.toLowerCase().includes(searchTerm)
+    );
+
+    renderCategoriesTable(filteredCategories.slice(0, pageSize));
+}
+document.getElementById('categorySearch').addEventListener('input', filterAndRenderCategories);
+document.getElementById('categoryPageSize').addEventListener('change', filterAndRenderCategories);
+// Llama a loadCategories cuando se carga la página
+document.addEventListener('DOMContentLoaded', loadCategories);
+function renderCategoriesTable(categories) {
+    const container = document.getElementById('categoriesTable');
+    if (categoriesTable) {
+        categoriesTable.destroy();
+    }
+    categoriesTable = new Handsontable(container, {
+        data: categories,
+        columns: [
+            { data: 'id', title: 'ID', readOnly: true, width: 50 },
+            { data: 'name', title: 'Nombre', width: 200 },
+            {
+                data: 'actions',
+                title: 'Acciones',
+                renderer: function(instance, td, row, col, prop, value, cellProperties) {
+                    const deleteBtn = `<button class="btn btn-danger btn-sm" onclick="deleteCategory(${categories[row].id})">Eliminar</button>`;
+                    td.innerHTML = deleteBtn;
+                    return td;
+                },
+                width: 100
+            }
+        ],
+        rowHeaders: true,
+        colHeaders: true,
+        height: 'auto',
+        stretchH: 'all',
+        className: 'htCenter',
+        licenseKey: 'non-commercial-and-evaluation'
     });
 }
 
