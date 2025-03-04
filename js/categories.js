@@ -148,12 +148,12 @@ function renderCategoriesTable(categories) {
                 data: 'actions',
                 title: 'Acciones',
                 renderer: function(instance, td, row, col, prop, value, cellProperties) {
-                    const editBtn = `<button class="btn btn-primary btn-sm me-2" onclick="editCategory(${categories[row].id})">Editar</button>`;
-                    const deleteBtn = `<button class="btn btn-danger btn-sm" onclick="deleteCategory(${categories[row].id})">Eliminar</button>`;
+                    const editBtn = `<button class="btn btn-primary btn-sm me-2" style="width: 90px;" onclick="editCategory(${categories[row].id})"><i class="fas fa-file-edit"></i> Editar</button>`;
+                    const deleteBtn = `<button class="btn btn-danger btn-sm" style="width: 90px;" onclick="deleteCategory(${categories[row].id})"><i class="fa-solid fa-trash-can"></i> Eliminar</button>`;
                     td.innerHTML = editBtn + deleteBtn;
                     return td;
                 },
-                width: 200
+                width: 220
             }
         ],
         rowHeaders: true,
@@ -199,9 +199,6 @@ async function deleteCategory(id) {
     }
 }
 async function editCategory(id) {
-    console.log("el id es",id);
-    console.log("todas las categorias",allCategories);
-    
     const category = allCategories.find(cat => cat.id == id);
     console.log(category);
     
