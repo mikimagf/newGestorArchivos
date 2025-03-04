@@ -1,23 +1,62 @@
 // Función para mostrar mensajes de alerta
 function showAlert(message, type = 'info') {
-    const alertPlaceholder = document.getElementById('alertPlaceholder');
-    if (!alertPlaceholder) return;
+    const iconMap = {
+        'success': 'success',
+        'error': 'error',
+        'warning': 'warning',
+        'info': 'info'
+    };
 
-    const wrapper = document.createElement('div');
-    wrapper.innerHTML = [
-        `<div class="alert alert-${type} alert-dismissible" role="alert">`,
-        `   <div>${message}</div>`,
-        '   <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>',
-        '</div>'
-    ].join('');
+    Swal.fire({
+        icon: iconMap[type] || 'info',
+        title: message,
+        toast: true,
+        position: 'bottom-end',
+        showConfirmButton: false,
+        timer: 3000,
+        timerProgressBar: true,
+        didOpen: (toast) => {
+            toast.addEventListener('mouseenter', Swal.stopTimer)
+            toast.addEventListener('mouseleave', Swal.resumeTimer)
+        }
+    });
+}
+// Función para mostrar alertas personalizadas usando SweetAlert2
+function showCustomAlert(message, type = 'info') {
+    const iconMap = {
+        'success': 'success',
+        'error': 'error',
+        'warning': 'warning',
+        'info': 'info'
+    };
 
-    alertPlaceholder.append(wrapper);
+    return Swal.fire({
+        icon: iconMap[type] || 'info',
+        title: message,
+        toast: true,
+        position: 'bottom-end',
+        showConfirmButton: false,
+        timer: 3000,
+        timerProgressBar: true,
+        didOpen: (toast) => {
+            toast.addEventListener('mouseenter', Swal.stopTimer)
+            toast.addEventListener('mouseleave', Swal.resumeTimer)
+        }
+    });
+}
 
-    // Eliminar la alerta después de 5 segundos
-    setTimeout(() => {
-        const alert = bootstrap.Alert.getOrCreateInstance(wrapper.firstElementChild);
-        alert.close();
-    }, 5000);
+// Función para mostrar confirmación personalizada usando SweetAlert2
+function showCustomConfirm(message, confirmButtonText = 'Sí', cancelButtonText = 'No') {
+    return Swal.fire({
+        title: '¿Estás seguro?',
+        text: message,
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonColor: '#3085d6',
+        cancelButtonColor: '#d33',
+        confirmButtonText: confirmButtonText,
+        cancelButtonText: cancelButtonText
+    });
 }
 
 // Función para formatear fechas
@@ -61,6 +100,8 @@ function requireAuth() {
 
 // Exportar las funciones para que estén disponibles en otros archivos
 export {
+    showCustomAlert,
+    showCustomConfirm,
     showAlert,
     formatDate,
     isValidEmail,

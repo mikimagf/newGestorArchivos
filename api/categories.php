@@ -30,6 +30,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'GET') {
     } else {
         echo json_encode(['success' => false, 'message' => 'Failed to add category']);
     }
+} elseif ($_SERVER['REQUEST_METHOD'] === 'PUT') {
+    $data = json_decode(file_get_contents("php://input"));
+    $stmt = $db->prepare("UPDATE categories SET name = ? WHERE id = ? AND user_id = ?");
+    if ($stmt->execute([$data->name, $data->id, $userId])) {
+        echo json_encode(['success' => true]);
+    } else {
+        echo json_encode(['success' => false, 'message' => 'Failed to update category']);
+    }
 } elseif ($_SERVER['REQUEST_METHOD'] === 'DELETE') {
     $data = json_decode(file_get_contents("php://input"));
     $stmt = $db->prepare("DELETE FROM categories WHERE id = ? AND user_id = ?");
