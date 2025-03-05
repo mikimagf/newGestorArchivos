@@ -1,7 +1,7 @@
-
+export { updateCategoryFilter };
 let filesTable;
 
-function loadFiles() {
+function cargarArchivos() {
     const token = localStorage.getItem('token');
     fetch('api/files.php', {
         method: 'GET',
@@ -12,7 +12,7 @@ function loadFiles() {
         .then(response => response.json())
         .then(data => {
             if (data.success) {
-                renderFilesTable(data.files);
+                renderizarTableArchivos(data.files);
                 updateCategoryFilter(data.categories);
             } else {
                 alert('Error al cargar archivos: ' + data.message);
@@ -24,11 +24,12 @@ function loadFiles() {
         });
 }
 
-function renderFilesTable(files) {
+function renderizarTableArchivos(files) {
     const container = document.getElementById('filesTable');
     if (filesTable) {
         filesTable.destroy();
     }
+    // @ts-ignore
     filesTable = new Handsontable(container, {
         data: files,
         columns: [
@@ -39,6 +40,7 @@ function renderFilesTable(files) {
             {
                 data: 'actions',
                 title: 'Acciones',
+                // @ts-ignore
                 renderer: function (instance, td, row, col, prop, value, cellProperties) {
                     const downloadBtn = `<button class="btn btn-primary btn-sm me-1" onclick="downloadFile(${files[row].id})">Descargar</button>`;
                     const deleteBtn = `<button class="btn btn-danger btn-sm" onclick="deleteFile(${files[row].id})">Eliminar</button>`;
@@ -56,20 +58,24 @@ function renderFilesTable(files) {
 
 function updateCategoryFilter(categories) {
     const categoryFilter = document.getElementById('categoryFilter');
+    // @ts-ignore
     categoryFilter.innerHTML = '<option value="">Todas las categorías</option>';
     categories.forEach(category => {
         const option = document.createElement('option');
         option.value = category.id;
         option.textContent = category.name;
+        // @ts-ignore
         categoryFilter.appendChild(option);
     });
 }
 
+// @ts-ignore
 function downloadFile(id) {
     const token = localStorage.getItem('token');
     window.location.href = `api/files.php?action=download&id=${id}&token=${token}`;
 }
-
+ 
+// @ts-ignore
 function deleteFile(id) {
     if (confirm('¿Estás seguro de que quieres eliminar este archivo?')) {
         const token = localStorage.getItem('token');
@@ -84,7 +90,7 @@ function deleteFile(id) {
             .then(response => response.json())
             .then(data => {
                 if (data.success) {
-                    loadFiles();
+                    cargarArchivos();
                 } else {
                     alert('Error al eliminar archivo: ' + data.message);
                 }
@@ -96,17 +102,12 @@ function deleteFile(id) {
     }
 }
 
-document.getElementById('uploadFileBtn').addEventListener('click', function () {
-    const modal = new bootstrap.Modal(document.getElementById('uploadFileModal'));
-    modal.show();
-});
 
-document.getElementById('saveFileBtn').addEventListener('click', function () {
+function guarArchivo(){
     const fileName = document.getElementById('fileName').value;
     const fileCategory = document.getElementById('fileCategory').value;
     const fileUpload = document.getElementById('fileUpload').files[0];
-
-    if (fileName && fileCategory && fileUpload) {
+    if (fileName&&fileCategory&&fileUpload) {
         const formData = new FormData();
         formData.append('name', fileName);
         formData.append('category', fileCategory);
@@ -123,7 +124,8 @@ document.getElementById('saveFileBtn').addEventListener('click', function () {
             .then(response => response.json())
             .then(data => {
                 if (data.success) {
-                    loadFiles();
+                    cargarArchivos();
+                    // @ts-ignore
                     const modal = bootstrap.Modal.getInstance(document.getElementById('uploadFileModal'));
                     modal.hide();
                 } else {
@@ -135,15 +137,76 @@ document.getElementById('saveFileBtn').addEventListener('click', function () {
                 alert('Error al subir archivo');
             });
     }
+}
+
+// @ts-ignore
+document.getElementById('uploadFileBtn').addEventListener('click', function () {
+    // @ts-ignore
+    const modal = new bootstrap.Modal(document.getElementById('uploadFileModal'));
+    modal.show();
 });
 
+
+// @ts-ignore
+// document.getElementById('saveFileBtn').addEventListener('click', function () {
+//     // @ts-ignore
+//     const fileName = document.getElementById('fileName').value;
+//     // @ts-ignore
+//     const fileCategory = document.getElementById('fileCategory').value;
+//     // @ts-ignore
+//     const fileUpload = document.getElementById('fileUpload').files[0];
+
+//     if (fileName && fileCategory && fileUpload) {
+//         const formData = new FormData();
+//         formData.append('name', fileName);
+//         formData.append('category', fileCategory);
+//         formData.append('file', fileUpload);
+
+//         const token = localStorage.getItem('token');
+//         fetch('api/files.php', {
+//             method: 'POST',
+//             headers: {
+//                 'Authorization': `Bearer ${token}`,
+//             },
+//             body: formData,
+//         })
+//             .then(response => response.json())
+//             .then(data => {
+//                 if (data.success) {
+//                     cargarArchivos();
+//                     // @ts-ignore
+//                     const modal = bootstrap.Modal.getInstance(document.getElementById('uploadFileModal'));
+//                     modal.hide();
+//                 } else {
+//                     alert('Error al subir archivo: ' + data.message);
+//                 }
+//             })
+//             .catch(error => {
+//                 console.error('Error:', error);
+//                 alert('Error al subir archivo');
+//             });
+//     }
+// });
+
+document.addEventListener('click', function(event) {
+    if (event.target && event.target.id === 'uploadFileBtn') {
+        const modal = new bootstrap.Modal(document.getElementById('uploadFileModal'));
+        modal.show();
+    } else if (event.target && event.target.id === 'saveFileBtn') {
+        cargarArchivos();
+    }
+});
+// @ts-ignore
 document.getElementById('fileSearch').addEventListener('input', function (e) {
+    // @ts-ignore
     const searchTerm = e.target.value.toLowerCase();
     filesTable.getPlugin('search').query(searchTerm);
     filesTable.render();
 });
 
+// @ts-ignore
 document.getElementById('categoryFilter').addEventListener('change', function (e) {
+    // @ts-ignore
     const categoryId = e.target.value;
     filesTable.getPlugin('filters').clearConditions();
     if (categoryId) {

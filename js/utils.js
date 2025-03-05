@@ -22,7 +22,7 @@ function showAlert(message, type = 'info') {
     });
 }
 // Función para mostrar alertas personalizadas usando SweetAlert2
-function showCustomAlert(message, type = 'info') {
+function showCustomAlerta(message, type = 'info') {
     const iconMap = {
         'success': 'success',
         'error': 'error',
@@ -97,10 +97,41 @@ function requireAuth() {
         window.location.href = 'index';
     }
 }
+/**
+ * Cierra un modal de Bootstrap y limpia los backdrops residuales.
+ * @param {string} modalId - El ID del elemento del modal.
+ */
+function cerrarYLimpiarModal(modalId) {
+    const modalElement = document.getElementById(modalId);
+    const modal = bootstrap.Modal.getInstance(modalElement);
+    
+    if (modal) {
+        modal.hide();
+        
+        // Limpiar backdrops y restaurar el body después de que se complete la animación de cierre
+        setTimeout(() => {
+            const backdrops = document.getElementsByClassName('modal-backdrop');
+            while (backdrops.length > 0) {
+                backdrops[0].parentNode.removeChild(backdrops[0]);
+            }
+            document.body.classList.remove('modal-open');
+            document.body.style.overflow = '';
+            document.body.style.paddingRight = '';
+        }, 300); // Ajusta este tiempo si la animación de cierre es más larga
+    }
+    
+    // Restablecer el atributo aria-hidden
+    modalElement.setAttribute('aria-hidden', 'true');
+    
+    // Limpiar los campos del formulario si es necesario
+    // Puedes personalizar esta parte según tus necesidades
+    const form = modalElement.querySelector('form');
+    if (form) form.reset();
+}
 
 // Exportar las funciones para que estén disponibles en otros archivos
 export {
-    showCustomAlert,
+        showCustomAlerta,
     showCustomConfirm,
     showAlert,
     formatDate,

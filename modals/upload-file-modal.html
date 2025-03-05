@@ -1,0 +1,32 @@
+<div class="modal fade" id="uploadFileModal" tabindex="-1">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">Subir Archivo</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        <form id="uploadFileForm">
+          <div class="mb-3">
+            <label for="fileName" class="form-label">Nombre del Archivo</label>
+            <input type="text" class="form-control" id="fileName" required />
+          </div>
+          <div class="mb-3">
+            <label for="fileCategory" class="form-label">Categoría</label>
+            <select class="form-select" id="fileCategory" required>
+              <!-- Las categorías se cargarán dinámicamente aquí -->
+            </select>
+          </div>
+          <div class="mb-3">
+            <label for="fileUpload" class="form-label">Archivo PDF</label>
+            <input type="file" class="form-control" id="fileUpload" accept=".pdf" required />
+          </div>
+        </form>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cerrar</button>
+        <button type="button" class="btn btn-primary" id="saveFileBtn">Subir</button>
+      </div>
+    </div>
+  </div>
+</div>

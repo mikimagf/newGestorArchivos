@@ -1,10 +1,13 @@
-import { showCustomAlert, showCustomConfirm } from './utils.js';
+import { showCustomAlerta, showCustomConfirm } from './utils.js';
+import { updateCategoryFilter } from './fileManagement.js';
 
+
+// @ts-ignore
 async function getAlertFunctions() {
     const utils = await import('./utils.js');
     return {
         showAlert: utils.showAlert,
-        showCustomAlert: utils.showCustomAlert
+        showCustomAlerta: utils.showCustomAlerta
     };
 }
 
@@ -13,11 +16,11 @@ let allCategories = [];
 let currentPage = 1;
 let itemsPerPage = 10;
 
-async function getShowCustomAlert() {
+async function getShowCustomAlerta() {
     const utils = await import('./utils.js');
-    return utils.showCustomAlert;
+    return utils.showCustomAlerta;
 }
-async function loadCategories() {
+async function cargarCategorias() {
     const token = localStorage.getItem('token');
     try {
         const response = await fetch('api/categories.php', {
@@ -29,24 +32,27 @@ async function loadCategories() {
         const data = await response.json();
         if (data.success) {
             allCategories = data.categories;
-            filterAndRenderCategories();
+            filtrarYRenderizarCategorias();
+            updateCategoryFilter(allCategories);
             console.log('Categories loaded successfully. Total:', allCategories.length);
         } else {
-            const showCustomAlert = await getShowCustomAlert();
-            showCustomAlert('Error al cargar categorías: ' + data.message, 'error');
+            const showCustomAlerta = await getShowCustomAlerta();
+            showCustomAlerta('Error al cargar categorías: ' + data.message, 'error');
         }
     } catch (error) {
         console.error('Error:', error);
-        const showCustomAlert = await getShowCustomAlert();
-        showCustomAlert('Error al cargar categorías', 'error');
+        const showCustomAlerta = await getShowCustomAlerta();
+        showCustomAlerta('Error al cargar categorías', 'error');
     }
 }
 
-function filterAndRenderCategories() {
+function filtrarYRenderizarCategorias() {
+    // @ts-ignore
     const searchTerm = document.getElementById('categorySearch').value.toLowerCase();
+    // @ts-ignore
     itemsPerPage = parseInt(document.getElementById('categoryPageSize').value);
-    
-    const filteredCategories = allCategories.filter(category => 
+
+    const filteredCategories = allCategories.filter(category =>
         category.name.toLowerCase().includes(searchTerm)
     );
 
@@ -54,12 +60,12 @@ function filterAndRenderCategories() {
     const endIndex = startIndex + itemsPerPage;
     const categoriesToRender = filteredCategories.slice(startIndex, endIndex);
 
-    renderCategoriesTable(categoriesToRender);
-    renderPagination(filteredCategories.length);
+    renderizarTabladeCategorias(categoriesToRender);
+    rendererizarPaginacion(filteredCategories.length);
     console.log('Categories filtered and rendered. Total:', filteredCategories.length);
 }
 
-function renderPagination(totalItems) {
+function rendererizarPaginacion(totalItems) {
     console.log('Rendering pagination. Total items:', totalItems);
     const paginationElement = document.getElementById('pagination');
     if (!paginationElement) {
@@ -79,15 +85,15 @@ function renderPagination(totalItems) {
 
     // Botón para ir a la primera página
     paginationHTML += `<li class="page-item ${currentPage === 1 ? 'disabled' : ''}">
-        <a class="page-link" href="#" onclick="changePage(1)" aria-label="First">
-            <span aria-hidden="true">&laquo;&laquo;</span>
+        <a class="page-link" href="#" onclick="canbiodePagina(1)" aria-label="First">
+            <span>&laquo;&laquo;</span>
         </a>
     </li>`;
 
     // Botón para página anterior
     paginationHTML += `<li class="page-item ${currentPage === 1 ? 'disabled' : ''}">
-        <a class="page-link" href="#" onclick="changePage(${currentPage - 1})" aria-label="Previous">
-            <span aria-hidden="true">&laquo;</span>
+        <a class="page-link" href="#" onclick="canbiodePagina(${currentPage - 1})" aria-label="Previous">
+            <span>&laquo;</span>
         </a>
     </li>`;
 
@@ -102,21 +108,21 @@ function renderPagination(totalItems) {
 
     for (let i = startPage; i <= endPage; i++) {
         paginationHTML += `<li class="page-item ${i === currentPage ? 'active' : ''}">
-            <a class="page-link" href="#" onclick="changePage(${i})">${i}</a>
+            <a class="page-link" href="#" onclick="canbiodePagina(${i})">${i}</a>
         </li>`;
     }
 
     // Botón para página siguiente
     paginationHTML += `<li class="page-item ${currentPage === totalPages ? 'disabled' : ''}">
-        <a class="page-link" href="#" onclick="changePage(${currentPage + 1})" aria-label="Next">
-            <span aria-hidden="true">&raquo;</span>
+        <a class="page-link" href="#" onclick="canbiodePagina(${currentPage + 1})" aria-label="Next">
+            <span >&raquo;</span>
         </a>
     </li>`;
 
     // Botón para ir a la última página
     paginationHTML += `<li class="page-item ${currentPage === totalPages ? 'disabled' : ''}">
-        <a class="page-link" href="#" onclick="changePage(${totalPages})" aria-label="Last">
-            <span aria-hidden="true">&raquo;&raquo;</span>
+        <a class="page-link" href="#" onclick="canbiodePagina(${totalPages})" aria-label="Last">
+            <span>&raquo;&raquo;</span>
         </a>
     </li>`;
 
@@ -129,16 +135,17 @@ function renderPagination(totalItems) {
     console.log('Pagination HTML rendered');
 }
 
-function changePage(page) {
+function canbiodePagina(page) {
     currentPage = page;
-    filterAndRenderCategories();
+    filtrarYRenderizarCategorias();
 }
 
-function renderCategoriesTable(categories) {
+function renderizarTabladeCategorias(categories) {
     const container = document.getElementById('categoriesTable');
     if (categoriesTable) {
         categoriesTable.destroy();
     }
+    // @ts-ignore
     categoriesTable = new Handsontable(container, {
         data: categories,
         columns: [
@@ -147,9 +154,10 @@ function renderCategoriesTable(categories) {
             {
                 data: 'actions',
                 title: 'Acciones',
-                renderer: function(instance, td, row, col, prop, value, cellProperties) {
-                    const editBtn = `<button class="btn btn-primary btn-sm me-2" onclick="editCategory(${categories[row].id})">Editar</button>`;
-                    const deleteBtn = `<button class="btn btn-danger btn-sm" onclick="deleteCategory(${categories[row].id})">Eliminar</button>`;
+                // @ts-ignore
+                renderer: function (instance, td, row, col, prop, value, cellProperties) {
+                    const editBtn = `<button class="btn btn-primary btn-sm me-2" onclick="editarCategoria(${categories[row].id})">Editar</button>`;
+                    const deleteBtn = `<button class="btn btn-danger btn-sm" onclick="eliminarCategoria(${categories[row].id})">Eliminar</button>`;
                     td.innerHTML = editBtn + deleteBtn;
                     return td;
                 },
@@ -165,9 +173,9 @@ function renderCategoriesTable(categories) {
     });
 }
 
-async function deleteCategory(id) {
+async function eliminarCategoria(id) {
     console.log(`Eliminar la categoria: ${id}`);
-    
+
     const result = await showCustomConfirm('¿Estás seguro de que quieres eliminar esta categoría?');
 
     if (result.isConfirmed) {
@@ -183,41 +191,49 @@ async function deleteCategory(id) {
             });
             const data = await response.json();
             if (data.success) {
-                if (typeof loadCategories === 'function') {
-                    await loadCategories();
+                if (typeof cargarCategorias === 'function') {
+                    await cargarCategorias();
                 } else {
-                    console.error('loadCategories is not defined');
+                    console.error('cargarCategorias is not defined');
                 }
-                showCustomAlert('Categoría eliminada con éxito', 'success');
+                showCustomAlerta('Categoría eliminada con éxito', 'success');
             } else {
-                showCustomAlert('Error al eliminar categoría: ' + data.message, 'error');
+                showCustomAlerta('Error al eliminar categoría: ' + data.message, 'error');
             }
         } catch (error) {
             console.error('Error:', error);
-            showCustomAlert('Error al eliminar categoría', 'error');
+            showCustomAlerta('Error al eliminar categoría', 'error');
         }
     }
 }
-async function editCategory(id) {
-    console.log("el id es",id);
-    console.log("todas las categorias",allCategories);
-    
+async function editarCategoria(id) {
+    console.log("el id es", id);
+    console.log("todas las categorias", allCategories);
+
     const category = allCategories.find(cat => cat.id == id);
     console.log(category);
-    
+
     if (category) {
+        // @ts-ignore
         document.getElementById('categoryId').value = category.id;
+        // @ts-ignore
         document.getElementById('categoryName').value = category.name;
+        // @ts-ignore
         document.getElementById('categoryModalTitle').textContent = 'Editar Categoría';
+        // @ts-ignore
         document.getElementById('saveCategoryBtn').textContent = 'Guardar Cambios';
+        // @ts-ignore
         const modal = new bootstrap.Modal(document.getElementById('categoryModal'));
         modal.show();
     }
 }
 
-async function saveCategory() {
+async function guardarCategoria() {
+    // @ts-ignore
     const categoryId = document.getElementById('categoryId').value;
+    // @ts-ignore
     const categoryName = document.getElementById('categoryName').value;
+    
     if (categoryName) {
         const token = localStorage.getItem('token');
         const method = categoryId ? 'PUT' : 'POST';
@@ -234,125 +250,103 @@ async function saveCategory() {
             });
             const data = await response.json();
             if (data.success) {
-                await loadCategories();
+                await cargarCategorias();
+                // @ts-ignore
                 const modal = bootstrap.Modal.getInstance(document.getElementById('categoryModal'));
                 modal.hide();
+                // @ts-ignore
                 document.getElementById('categoryName').value = '';
+                // @ts-ignore
                 document.getElementById('categoryId').value = '';
-                showCustomAlert(categoryId ? 'Categoría actualizada con éxito' : 'Categoría agregada con éxito', 'success');
+                
+                showCustomAlerta(categoryId ? 'Categoría actualizada con éxito' : 'Categoría agregada con éxito', 'success');
             } else {
-                showCustomAlert('Error al ' + (categoryId ? 'actualizar' : 'agregar') + ' categoría: ' + data.message, 'error');
+                showCustomAlerta('Error al ' + (categoryId ? 'actualizar' : 'agregar') + ' categoría: ' + data.message, 'error');
             }
         } catch (error) {
             console.error('Error:', error);
-            showCustomAlert('Error al ' + (categoryId ? 'actualizar' : 'agregar') + ' categoría', 'error');
+            showCustomAlerta('Error al ' + (categoryId ? 'actualizar' : 'agregar') + ' categoría', 'error');
         }
     }
 }
 
-// function saveCategory() {
-//     const categoryName = document.getElementById('categoryName').value;
-//     if (categoryName) {
-//         const token = localStorage.getItem('token');
-//         fetch('api/categories.php', {
-//             method: 'POST',
-//             headers: {
-//                 'Content-Type': 'application/json',
-//                 'Authorization': `Bearer ${token}`,
-//             },
-//             body: JSON.stringify({ name: categoryName }),
-//         })
-//         .then(response => response.json())
-//         .then(data => {
-//             if (data.success) {
-//                 loadCategories();
-//                 document.getElementById('categoryName').value = '';
-//                 const modal = bootstrap.Modal.getInstance(document.getElementById('addCategoryModal'));
-//                 showCustomAlert('Categoría agregada con éxito', 'success');
-//                 modal.hide();
-//             } else {
-//                 showAlert('Error al agregar categoría: ' + data.message, 'error');
-//             }
-//         })
-//         .catch(error => {
-//             console.error('Error:', error);
-//             showAlert('Error al agregar categoría', 'error');
-//         });
-//     }
-// }
-
-
-
-// document.getElementById('addCategoryBtn').addEventListener('click', function() {
-//     const modal = new bootstrap.Modal(document.getElementById('addCategoryModal'));
-//     modal.show();
-// });
- 
-document.getElementById('addCategoryBtn').addEventListener('click', function() {
+// @ts-ignore
+document.getElementById('addCategoryBtn').addEventListener('click', function () {
+    // @ts-ignore
     document.getElementById('categoryModalTitle').textContent = 'Agregar Categoría';
+    // @ts-ignore
     document.getElementById('categoryId').value = '';
+    // @ts-ignore
     document.getElementById('categoryName').value = '';
+    // @ts-ignore
     const modal = new bootstrap.Modal(document.getElementById('categoryModal'));
     modal.show();
 });
 
-// document.getElementById('saveCategoryBtn').addEventListener('click', async function() {
-//     const categoryName = document.getElementById('categoryName').value;
-//     if (categoryName) {
-//         const token = localStorage.getItem('token');
-//         try {
-//             const response = await fetch('api/categories.php', {
-//                 method: 'POST',
-//                 headers: {
-//                     'Content-Type': 'application/json',
-//                     'Authorization': `Bearer ${token}`,
-//                 },
-//                 body: JSON.stringify({ name: categoryName }),
-//             });
-//             const data = await response.json();
-//             if (data.success) {
-//                 await loadCategories();
-//                 const modal = bootstrap.Modal.getInstance(document.getElementById('addCategoryModal'));
-//                 modal.hide();
-//                 document.getElementById('categoryName').value = '';
-//                 showCustomAlert('Categoría agregada con éxito', 'success');
-//             } else {
-//                 showCustomAlert('Error al agregar categoría: ' + data.message, 'error');
-//             }
-//         } catch (error) {
-//             console.error('Error:', error); 
-//             showCustomAlert('Error al agregar categoría', 'error');
-//         }
+// @ts-ignore
+// document.getElementById('saveCategoryBtn').addEventListener('click', guardarCategoria);
+
+
+// @ts-ignore
+// document.getElementById('categoryName').addEventListener('keypress', function(event) {
+//     if (event.key === 'Enter') {
+//         event.preventDefault(); // Prevenir el comportamiento por defecto del formulario
+//         guardarCategoria();
 //     }
 // });
-
-document.getElementById('saveCategoryBtn').addEventListener('click', saveCategory);
-
-
-document.getElementById('categoryName').addEventListener('keypress', function(event) {
-    if (event.key === 'Enter') {
+document.addEventListener('keypress', function (event) {
+    if (event.target && event.target.id === 'categoryName' && event.key === 'Enter') {
         event.preventDefault(); // Prevenir el comportamiento por defecto del formulario
-        saveCategory();
+        guardarCategoria();
     }
 });
 
-document.getElementById('categorySearch').addEventListener('input', filterAndRenderCategories);
+// @ts-ignore
+document.getElementById('categorySearch').addEventListener('input', filtrarYRenderizarCategorias);
+
+// @ts-ignore
 document.getElementById('categoryPageSize').addEventListener('change', () => {
     currentPage = 1;
-    filterAndRenderCategories();
+    filtrarYRenderizarCategorias();
 });
 
 
-window.deleteCategory = deleteCategory;
-window.changePage = changePage;
-window.editCategory = editCategory;
-window.loadCategories=loadCategories;
-document.addEventListener('DOMContentLoaded', function() {
-    loadCategories();
-    
-    // document.getElementById('categorySearch').addEventListener('input', filterAndRenderCategories);
+document.addEventListener('click', function (event) {
+    if (event.target && event.target.id === 'saveCategoryBtn') {
+        guardarCategoria();
+    }
+    //  else if (event.target && event.target.id === 'addCategoryBtn') {
+    //     // Código para mostrar el modal de categoría
+    //     const modalElement = document.getElementById('categoryModal');
+        
+    //     // Reiniciar el formulario
+    //     document.getElementById('categoryModalTitle').textContent = 'Agregar Categoríaa';
+    //     document.getElementById('categoryId').value = '';
+    //     document.getElementById('categoryName').value = '';
+        
+    //     // Usar el método de Bootstrap para mostrar el modal
+    //     const modal = new bootstrap.Modal(modalElement);
+    //     modal.show();
+    // }
+});
+
+
+// @ts-ignore
+window.eliminarCategoria = eliminarCategoria;
+// @ts-ignore
+window.canbiodePagina = canbiodePagina;
+// @ts-ignore
+window.editarCategoria = editarCategoria;
+// @ts-ignore
+window.cargarCategorias = cargarCategorias;
+document.addEventListener('DOMContentLoaded', function () {
+    cargarCategorias();
+
+    // document.getElementById('categorySearch').addEventListener('input', filtrarYRenderizarCategorias);
     // document.getElementById('categoryPageSize').addEventListener('change', () => {
     //     currentPage = 1;
-    //     filterAndRenderCategories();
+    //     filtrarYRenderizarCategorias();
     // });
+
+    
 });
