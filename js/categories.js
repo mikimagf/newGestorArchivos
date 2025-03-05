@@ -229,44 +229,46 @@ async function editarCategoria(id) {
 }
 
 async function guardarCategoria() {
-    // @ts-ignore
+    const form = document.getElementById('categoryForm');
+    if (form.checkValidity() === false) {
+        event.preventDefault();
+        event.stopPropagation();
+        form.classList.add('was-validated');
+        return;
+    }
+
     const categoryId = document.getElementById('categoryId').value;
-    // @ts-ignore
     const categoryName = document.getElementById('categoryName').value;
     
-    if (categoryName) {
-        const token = localStorage.getItem('token');
-        const method = categoryId ? 'PUT' : 'POST';
-        const body = categoryId ? JSON.stringify({ id: categoryId, name: categoryName }) : JSON.stringify({ name: categoryName });
+    const token = localStorage.getItem('token');
+    const method = categoryId ? 'PUT' : 'POST';
+    const body = categoryId ? JSON.stringify({ id: categoryId, name: categoryName }) : JSON.stringify({ name: categoryName });
 
-        try {
-            const response = await fetch('api/categories.php', {
-                method: method,
-                headers: {
-                    'Content-Type': 'application/json',
-                    'Authorization': `Bearer ${token}`,
-                },
-                body: body,
-            });
-            const data = await response.json();
-            if (data.success) {
-                await cargarCategorias();
-                // @ts-ignore
-                const modal = bootstrap.Modal.getInstance(document.getElementById('categoryModal'));
-                modal.hide();
-                // @ts-ignore
-                document.getElementById('categoryName').value = '';
-                // @ts-ignore
-                document.getElementById('categoryId').value = '';
-                
-                showCustomAlerta(categoryId ? 'Categoría actualizada con éxito' : 'Categoría agregada con éxito', 'success');
-            } else {
-                showCustomAlerta('Error al ' + (categoryId ? 'actualizar' : 'agregar') + ' categoría: ' + data.message, 'error');
-            }
-        } catch (error) {
-            console.error('Error:', error);
-            showCustomAlerta('Error al ' + (categoryId ? 'actualizar' : 'agregar') + ' categoría', 'error');
+    try {
+        const response = await fetch('api/categories.php', {
+            method: method,
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${token}`,
+            },
+            body: body,
+        });
+        const data = await response.json();
+        if (data.success) {
+            await cargarCategorias();
+            const modal = bootstrap.Modal.getInstance(document.getElementById('categoryModal'));
+            modal.hide();
+            document.getElementById('categoryName').value = '';
+            document.getElementById('categoryId').value = '';
+            form.classList.remove('was-validated');
+            
+            showCustomAlerta(categoryId ? 'Categoría actualizada con éxito' : 'Categoría agregada con éxito', 'success');
+        } else {
+            showCustomAlerta('Error al ' + (categoryId ? 'actualizar' : 'agregar') + ' categoría: ' + data.message, 'error');
         }
+    } catch (error) {
+        console.error('Error:', error);
+        showCustomAlerta('Error al ' + (categoryId ? 'actualizar' : 'agregar') + ' categoría', 'error');
     }
 }
 

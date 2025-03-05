@@ -6,17 +6,14 @@
         <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
       </div>
       <div class="modal-body">
-        <form id="categoryForm">
+        <form id="categoryForm" novalidate>
           <input type="hidden" id="categoryId">
           <div class="mb-3">
-            <label for="categoryName" class="form-label">Nombre de la Categoría</label>
+            <label for="categoryName" class="form-label">Nombre de la categoría</label>
             <input type="text" class="form-control" id="categoryName" required>
             <div class="invalid-feedback">
-              Ingrese una categoria.
+              Por favor, ingrese un nombre para la categoría.
             </div>
-            <!-- <div class="invalid-tooltip">
-              Completa este campo
-            </div> -->
           </div>
         </form>
       </div>
