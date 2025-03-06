@@ -1,3 +1,4 @@
+import { showCustomAlerta, showCustomConfirm } from './utils.js';
 export { updateCategoryFilter };
 let filesTable;
 
@@ -101,40 +102,88 @@ window.deleteFile = function(id) {
     }
 }
 
-function guardarArchivo() {
-    const fileName = document.getElementById('fileName').value;
-    const fileCategory = document.getElementById('fileCategory').value;
-    const fileUpload = document.getElementById('fileUpload').files[0];
-    if (fileName && fileCategory && fileUpload) {
-        const formData = new FormData();
-        formData.append('name', fileName);
-        formData.append('category', fileCategory);
-        formData.append('file', fileUpload);
+async function uploadFile(file, fileName, categoryId) {
+    const chunkSize = 1024 * 1024; // 1MB por chunk
+    const totalChunks = Math.ceil(file.size / chunkSize);
 
-        const token = localStorage.getItem('token');
-        fetch('api/files.php', {
-            method: 'POST',
-            headers: {
-                'Authorization': `Bearer ${token}`,
-            },
-            body: formData,
-        })
-            .then(response => response.json())
-            .then(data => {
-                if (data.success) {
-                    cargarArchivos();
-                    const modal = bootstrap.Modal.getInstance(document.getElementById('uploadFileModal'));
-                    modal.hide();
-                } else {
-                    alert('Error al subir archivo: ' + data.message);
-                }
-            })
-            .catch(error => {
-                console.error('Error:', error);
-                alert('Error al subir archivo');
+    for (let chunkNumber = 0; chunkNumber < totalChunks; chunkNumber++) {
+        const start = chunkNumber * chunkSize;
+        const end = Math.min(start + chunkSize, file.size);
+        const chunk = file.slice(start, end);
+
+        const formData = new FormData();
+        formData.append('action', 'upload_chunk');
+        formData.append('file', chunk);
+        formData.append('fileName', fileName);
+        formData.append('originalName', file.name);
+        formData.append('chunkNumber', chunkNumber);
+        formData.append('totalChunks', totalChunks);
+        formData.append('categoryId', categoryId);
+
+        try {
+            const token = localStorage.getItem('token');
+            const response = await fetch('api/files.php', {
+                method: 'POST',
+                headers: {
+                    'Authorization': `Bearer ${token}`,
+                },
+                body: formData
             });
+
+            const data = await response.json();
+            if (!data.success) {
+                throw new Error(data.message);
+            }
+
+            // Actualizar la barra de progreso
+            updateProgressBar((chunkNumber + 1) / totalChunks * 100);
+
+        } catch (error) {
+            console.error('Error uploading chunk:', error);
+            showCustomAlerta('Error al subir archivo: ' + error.message, 'error');
+            throw error;
+        }
+    }
+
+    console.log('File upload completed');
+    showCustomAlerta('Archivo subido con éxito', 'success');
+    cargarArchivos();
+    const modal = bootstrap.Modal.getInstance(document.getElementById('uploadFileModal'));
+    modal.hide();
+}
+
+// Función para actualizar la barra de progreso
+function updateProgressBar(percentage) {
+    // Implementa esta función según tu interfaz de usuario
+    console.log(`Upload progress: ${percentage}%`);
+    // Por ejemplo:
+    // document.getElementById('uploadProgress').style.width = `${percentage}%`;
+    // document.getElementById('uploadProgress').textContent = `${Math.round(percentage)}%`;
+}
+
+// Reemplazar la función guardarArchivo existente con esta nueva versión
+async function guardarArchivo() {
+    const fileName = document.getElementById('fileName')?.value;
+    const fileCategory = document.getElementById('fileCategory')?.value;
+    const fileUpload = document.getElementById('fileUpload')?.files?.[0];
+
+    if (fileName && fileCategory && fileUpload) {
+        try {
+            await uploadFile(fileUpload, fileName, fileCategory);
+            showCustomAlerta('Archivo subido con éxito', 'success');
+            const modal = bootstrap.Modal.getInstance(document.getElementById('uploadFileModal'));
+            modal.hide();
+            await cargarArchivos();
+        } catch (error) {
+            console.error('Error:', error);
+            showCustomAlerta('Error al subir archivo: ' + error.message, 'error');
+        }
+    } else {
+        showCustomAlerta('Por favor, complete todos los campos', 'warning');
     }
 }
+
+// El resto de tu código permanece igual...
 
 function openUploadModal() {
     document.getElementById('uploadFileForm').reset();
