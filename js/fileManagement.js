@@ -91,6 +91,7 @@ window.deleteFile = function(id) {
             .then(data => {
                 if (data.success) {
                     cargarArchivos();
+                    showCustomAlerta("Eliminado con exito");
                 } else {
                     alert('Error al eliminar archivo: ' + data.message);
                 }
