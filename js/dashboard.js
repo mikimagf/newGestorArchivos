@@ -63,7 +63,7 @@ document.addEventListener('DOMContentLoaded', async function () {
         dashboardContent.style.display = 'none';
         categoriesContent.style.display = 'none';
         filesContent.style.display = 'block';
-        loadFiles();
+        cargarArchivos();
     }
 
     async function logout() {

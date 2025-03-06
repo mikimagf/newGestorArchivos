@@ -34,7 +34,7 @@ async function cargarCategorias() {
             allCategories = data.categories;
             filtrarYRenderizarCategorias();
             updateCategoryFilter(allCategories);
-            console.log('Categories loaded successfully. Total:', allCategories.length);
+            console.log('Categorias Encontradas. Total:', allCategories.length);
         } else {
             const showCustomAlerta = await getShowCustomAlerta();
             showCustomAlerta('Error al cargar categorías: ' + data.message, 'error');
@@ -62,11 +62,11 @@ function filtrarYRenderizarCategorias() {
 
     renderizarTabladeCategorias(categoriesToRender);
     rendererizarPaginacion(filteredCategories.length);
-    console.log('Categories filtered and rendered. Total:', filteredCategories.length);
+    // console.log('Categories filtered and rendered. Total:', filteredCategories.length);
 }
 
 function rendererizarPaginacion(totalItems) {
-    console.log('Rendering pagination. Total items:', totalItems);
+    // console.log('Rendering pagination. Total items:', totalItems);
     const paginationElement = document.getElementById('pagination');
     if (!paginationElement) {
         console.error('Elemento de paginación no encontrado');
@@ -74,7 +74,7 @@ function rendererizarPaginacion(totalItems) {
     }
 
     const totalPages = Math.ceil(totalItems / itemsPerPage);
-    console.log('Total pages:', totalPages, 'Current page:', currentPage, 'Items per page:', itemsPerPage);
+    // console.log('Total pages:', totalPages, 'Current page:', currentPage, 'Items per page:', itemsPerPage);
 
     if (totalPages <= 1) {
         paginationElement.innerHTML = '';
@@ -132,7 +132,7 @@ function rendererizarPaginacion(totalItems) {
     paginationHTML += `<div class="mt-2">Página ${currentPage} de ${totalPages} (${totalItems} registros)</div>`;
 
     paginationElement.innerHTML = paginationHTML;
-    console.log('Pagination HTML rendered');
+    // console.log('Pagination HTML rendered');
 }
 
 function canbiodePagina(page) {
