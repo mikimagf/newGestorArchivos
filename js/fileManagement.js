@@ -11,10 +11,7 @@ document.addEventListener('DOMContentLoaded', function () {
     console.log("DOM cargado, iniciando carga de archivos");
     cargarArchivos();
 
-    // Agregar event listeners para los filtros
-    //document.getElementById('fileSearch').addEventListener('input', cargarArchivos);
-    //document.getElementById('categoryFilter').addEventListener('change', cargarArchivos);
-    // Agregar un event listener al documento para manejar clics en el botón saveFileBtn
+   
     document.addEventListener('click', function (event) {
         if (event.target && event.target.id === 'saveFileBtn') {
           
@@ -27,11 +24,6 @@ async function cargarArchivos() {
     console.log('Iniciando carga de archivos...');
 
     const token = localStorage.getItem('token');
-
-
-
-    //const searchTerm = document.getElementById('fileSearch').value;
-    //const categoryFilter = document.getElementById('categoryFilter').value;
 
     try {
         /*---- OPCION 1 ----*/
@@ -68,9 +60,7 @@ async function cargarArchivos() {
             renderizarTableArchivos(files);
             //console.log('renderizarTableArchivos completado');
 
-            if (data.categories) {
-                //updateCategoryFilter(data.categories);
-            }
+          
         } else {
             throw new Error(data.message || 'Error desconocido');
         }
@@ -160,21 +150,17 @@ function renderizarTableArchivos(files) {
         console.log("Filas visibles:", document.querySelectorAll('#filesTable tbody tr:not(.htHidden)').length);
     });
 }
-// Función auxiliar para obtener categorías únicas
-// function getUniqueCategories(files) {
-//     const categories = new Set(files.map(file => file.category_name));
-//     return Array.from(categories);
+
+// export function updateCategoryFilter(categories) {
+//     // const categoryFilter = document.getElementById('categoryFilter');
+//     // categoryFilter.innerHTML = '<option value="">Todas las categorías</option>';
+//     // categories.forEach(category => {
+//     //     const option = document.createElement('option');
+//     //     option.value = category.id;
+//     //     option.textContent = category.name;
+//     //     categoryFilter.appendChild(option);
+//     // });
 // }
-export function updateCategoryFilter(categories) {
-    // const categoryFilter = document.getElementById('categoryFilter');
-    // categoryFilter.innerHTML = '<option value="">Todas las categorías</option>';
-    // categories.forEach(category => {
-    //     const option = document.createElement('option');
-    //     option.value = category.id;
-    //     option.textContent = category.name;
-    //     categoryFilter.appendChild(option);
-    // });
-}
 
 
 async function downloadFile(id) {
@@ -327,7 +313,6 @@ async function guardarArchivo() {
             modal.hide();
             // Después de subir el archivo con éxito:
             form.classList.remove('was-validated');
-            cerrarYLimpiarModal('uploadFileModal');
             await cargarArchivos();
 
         } catch (error) {
@@ -339,12 +324,19 @@ async function guardarArchivo() {
     }
 }
 
-// El resto de tu código permanece igual...
+
+
 
 function openUploadModal() {
+    console.log("abriendo modal");
+    
     document.getElementById('uploadFileForm').reset();
     loadCategories();
-    const modal = new bootstrap.Modal(document.getElementById('uploadFileModal'));
+    console.log("categorias cargadas");
+    
+   const modal = new bootstrap.Modal(document.getElementById('uploadFileModal'));
+//    const modal = new window.bootstrap.Modal(document.getElementById('uploadFileModal'));
+
     modal.show();
 }
 async function loadCategories() {
@@ -378,9 +370,9 @@ async function loadCategories() {
         alert('Error al cargar categorías');
     }
 }
+
 // Exponer funciones necesarias globalmente
 window.downloadFile = downloadFile;
-window.openUploadModal = openUploadModal;
 window.cargarArchivos = cargarArchivos;
 
-export { cargarArchivos, downloadFile, openUploadModal };
+export { cargarArchivos, downloadFile };

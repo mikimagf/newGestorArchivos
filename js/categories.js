@@ -1,5 +1,5 @@
 import { showCustomAlerta, showCustomConfirm } from './utils.js';
-import { updateCategoryFilter } from './fileManagement.js';
+//import { updateCategoryFilter } from './fileManagement.js';
 
 
 // @ts-ignore
@@ -33,7 +33,7 @@ async function cargarCategorias() {
         if (data.success) {
             allCategories = data.categories;
             filtrarYRenderizarCategorias();
-            updateCategoryFilter(allCategories);
+            //updateCategoryFilter(allCategories);
             console.log('Categorias Encontradas. Total:', allCategories.length);
         } else {
             const showCustomAlerta = await getShowCustomAlerta();
@@ -201,7 +201,6 @@ async function eliminarCategoria(id) {
                 showCustomAlerta('Error al eliminar categoría: ' + data.message, 'error');
             }
         } catch (error) {
-            console.error('Error:', error);
             showCustomAlerta('Error al eliminar categoría', 'error');
         }
     }
@@ -267,13 +266,12 @@ async function guardarCategoria() {
             showCustomAlerta('Error al ' + (categoryId ? 'actualizar' : 'agregar') + ' categoría: ' + data.message, 'error');
         }
     } catch (error) {
-        console.error('Error:', error);
         showCustomAlerta('Error al ' + (categoryId ? 'actualizar' : 'agregar') + ' categoría', 'error');
     }
 }
 
 // @ts-ignore
-document.getElementById('addCategoryBtn').addEventListener('click', function () {
+document.getElementById('addCategoryBtn').addEventListener('click', function () { 
     // @ts-ignore
     document.getElementById('categoryModalTitle').textContent = 'Agregar Categoría';
     // @ts-ignore
@@ -285,17 +283,6 @@ document.getElementById('addCategoryBtn').addEventListener('click', function () 
     modal.show();
 });
 
-// @ts-ignore
-// document.getElementById('saveCategoryBtn').addEventListener('click', guardarCategoria);
-
-
-// @ts-ignore
-// document.getElementById('categoryName').addEventListener('keypress', function(event) {
-//     if (event.key === 'Enter') {
-//         event.preventDefault(); // Prevenir el comportamiento por defecto del formulario
-//         guardarCategoria();
-//     }
-// });
 document.addEventListener('keypress', function (event) {
     if (event.target && event.target.id === 'categoryName' && event.key === 'Enter') {
         event.preventDefault(); // Prevenir el comportamiento por defecto del formulario
@@ -317,19 +304,7 @@ document.addEventListener('click', function (event) {
     if (event.target && event.target.id === 'saveCategoryBtn') {
         guardarCategoria();
     }
-    //  else if (event.target && event.target.id === 'addCategoryBtn') {
-    //     // Código para mostrar el modal de categoría
-    //     const modalElement = document.getElementById('categoryModal');
-        
-    //     // Reiniciar el formulario
-    //     document.getElementById('categoryModalTitle').textContent = 'Agregar Categoríaa';
-    //     document.getElementById('categoryId').value = '';
-    //     document.getElementById('categoryName').value = '';
-        
-    //     // Usar el método de Bootstrap para mostrar el modal
-    //     const modal = new bootstrap.Modal(modalElement);
-    //     modal.show();
-    // }
+ 
 });
 
 
@@ -344,11 +319,4 @@ window.cargarCategorias = cargarCategorias;
 document.addEventListener('DOMContentLoaded', function () {
     cargarCategorias();
 
-    // document.getElementById('categorySearch').addEventListener('input', filtrarYRenderizarCategorias);
-    // document.getElementById('categoryPageSize').addEventListener('change', () => {
-    //     currentPage = 1;
-    //     filtrarYRenderizarCategorias();
-    // });
-
-    
 });

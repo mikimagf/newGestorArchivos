@@ -73,9 +73,9 @@ body {
 }
 
 /* Modales */
-.modal-content {
+/* .modal-content {
     border-radius: 8px;
-}
+} */
 
 /* Botones */
 .btn-primary {
@@ -226,3 +226,10 @@ body {
     background-color: #007bff;
     transition: all 0.3s ease;
   }
+  /* .modal {
+      z-index: 1050 !important;
+  }
+  
+  .modal-backdrop {
+      z-index: 1040 !important;
+  } */

@@ -57,8 +57,8 @@ document.addEventListener('DOMContentLoaded', async function () {
         dashboardContent.style.display = 'none';
         categoriesContent.style.display = 'block';
         filesContent.style.display = 'none';
-       await cargarCategorias();
-       setActiveTab(categoriesLink);
+        await cargarCategorias();
+        setActiveTab(categoriesLink);
 
     }
 
@@ -66,15 +66,70 @@ document.addEventListener('DOMContentLoaded', async function () {
         dashboardContent.style.display = 'none';
         categoriesContent.style.display = 'none';
         filesContent.style.display = 'block';
-      await  cargarArchivos();
-      setActiveTab(filesLink);
+        await cargarArchivos();
+        setActiveTab(filesLink);
     }
 
-    async function logout() {
-        localStorage.removeItem('token');
-        window.location.href = 'index';
-    }
+ async function logout() {
+     try {
+         // Obtener el token actual
+         const token = localStorage.getItem('token');
+ 
+         // Llamada al servidor para invalidar el token
+         const response = await fetch('api/auth.php', {
+             method: 'POST',
+             headers: {
+                 'Content-Type': 'application/json',
+                 'Authorization': `Bearer ${token}`
+             },
+             body: JSON.stringify({ action: 'logout' })
+         });
+ 
+         // Verificar si la respuesta es JSON válido
+         const contentType = response.headers.get("content-type");
+         if (contentType && contentType.indexOf("application/json") !== -1) {
+             const data = await response.json();
+             if (data.success) {
+                 // Proceso de logout exitoso
+                 clearSessionData();
+                 window.location.href = 'index';
+             } else {
+                 throw new Error(data.message || 'Error durante el logout');
+             }
+         } else {
+             // La respuesta no es JSON, manejar como error
+             const textResponse = await response.text();
+             throw new Error(`Respuesta no válida del servidor: ${textResponse}`);
+         }
+     } catch (error) {
+         console.error('Error durante el logout:', error);
+         alert('Error durante el logout: ' + error.message);
+     }
+ }
+ 
+ function clearSessionData() {
+     // Eliminar el token del almacenamiento local
+     localStorage.removeItem('token');
+ 
+     // Limpiar el almacenamiento local
+     localStorage.clear();
+ 
+     // Limpiar el almacenamiento de sesión
+     sessionStorage.clear();
+ 
+     // Eliminar todas las cookies
+     document.cookie.split(";").forEach(function (c) {
+         document.cookie = c.replace(/^ +/, "").replace(/=.*/, "=;expires=" + new Date().toUTCString() + ";path=/");
+     });
+ }
 
+    // Asegúrate de que el event listener para el botón de logout esté configurado correctamente
+    document.addEventListener('navPlaceholderLoaded', () => {
+        const logoutBtn = document.getElementById('logoutBtn');
+        if (logoutBtn) {
+            logoutBtn.addEventListener('click', logout);
+        }
+    });
     async function loadDashboardData() {
         fetch('api/dashboard.php', {
             method: 'GET',

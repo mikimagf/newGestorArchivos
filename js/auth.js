@@ -1,13 +1,14 @@
-
 document.addEventListener('DOMContentLoaded', function() {
     const loginForm = document.getElementById('loginForm');
     const registerForm = document.getElementById('registerForm');
-
+    
     if (loginForm) {
         loginForm.addEventListener('submit', function(e) {
             e.preventDefault();
+            
             const username = document.getElementById('username').value;
             const password = document.getElementById('password').value;
+            
             login(username, password);
         });
     }
@@ -15,10 +16,11 @@ document.addEventListener('DOMContentLoaded', function() {
     if (registerForm) {
         registerForm.addEventListener('submit', function(e) {
             e.preventDefault();
+            
             const nombre = document.getElementById('nombre').value;
             const apellido = document.getElementById('apellido').value;
             const email = document.getElementById('email').value;
-            const usuario = document.getElementById('usuario').value;
+            const username = document.getElementById('usuario').value;
             const password = document.getElementById('password').value;
             const confirmPassword = document.getElementById('confirmPassword').value;
 
@@ -26,8 +28,8 @@ document.addEventListener('DOMContentLoaded', function() {
                 alert('Las contraseñas no coinciden');
                 return;
             }
-
-            register(nombre, apellido, email, usuario, password);
+            
+            register(nombre, apellido, email, username, password);
         });
     }
 });
@@ -38,7 +40,11 @@ function login(username, password) {
         headers: {
             'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ action: 'login', username, password }),
+        body: JSON.stringify({
+            action: 'login',
+            username: username,
+            password: password
+        }),
     })
     .then(response => response.json())
     .then(data => {
@@ -55,19 +61,26 @@ function login(username, password) {
     });
 }
 
-function register(nombre, apellido, email, usuario, password) {
+function register(nombre, apellido, email, username, password) {
     fetch('api/auth.php', {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ action: 'register', nombre, apellido, email, usuario, password }),
+        body: JSON.stringify({
+            action: 'register',
+            nombre: nombre,
+            apellido: apellido,
+            email: email,
+            username: username,
+            password: password
+        }),
     })
     .then(response => response.json())
     .then(data => {
         if (data.success) {
             alert('Registro exitoso. Por favor, inicia sesión.');
-            window.location.href = 'index';
+            window.location.href = 'index.html'; // Redirige a la página de inicio de sesión
         } else {
             alert('Error de registro: ' + data.message);
         }
@@ -76,4 +89,4 @@ function register(nombre, apellido, email, usuario, password) {
         console.error('Error:', error);
         alert('Error al registrar');
     });
-} 
+}
