@@ -1,4 +1,4 @@
-<div class="modal fade" id="uploadFileModal" tabindex="-1">
+<div class="modal fade" id="uploadFileModal" tabindex="-1" inert>
   <div class="modal-dialog">
     <div class="modal-content">
       <div class="modal-header">
@@ -16,6 +16,9 @@
             <select class="form-select" id="fileCategory" required>
               <!-- Las categorías se cargarán dinámicamente aquí -->
             </select>
+            <div class="invalid-feedback" id="categoryAlert">
+              Por favor, seleccione una categoría.
+            </div>
           </div>
           <div class="mb-3">
             <label for="fileUpload" class="form-label">Archivo PDF</label>
