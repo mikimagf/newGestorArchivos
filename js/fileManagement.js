@@ -9,19 +9,25 @@ document.addEventListener('DOMContentLoaded', function() {
     cargarArchivos();
     
     // Agregar event listeners para los filtros
-    document.getElementById('fileSearch').addEventListener('input', cargarArchivos);
-    document.getElementById('categoryFilter').addEventListener('change', cargarArchivos);
+    //document.getElementById('fileSearch').addEventListener('input', cargarArchivos);
+    //document.getElementById('categoryFilter').addEventListener('change', cargarArchivos);
 });
 
 async function cargarArchivos() {
     console.log('Iniciando carga de archivos...');
     
     const token = localStorage.getItem('token');
-    const searchTerm = document.getElementById('fileSearch').value;
-    const categoryFilter = document.getElementById('categoryFilter').value;
+    //const searchTerm = document.getElementById('fileSearch').value;
+    //const categoryFilter = document.getElementById('categoryFilter').value;
     
     try {
-        const response = await fetch(`api/files.php?search=${encodeURIComponent(searchTerm)}&category=${categoryFilter}`, {
+    //    const response = await fetch(`api/files.php?search=${encodeURIComponent(searchTerm)}&category=${categoryFilter}`, {
+    //         method: 'GET',
+    //         headers: {
+    //             'Authorization': `Bearer ${token}`,
+    //         },
+    //     });
+       const response = await fetch(`api/files.php`, {
             method: 'GET',
             headers: {
                 'Authorization': `Bearer ${token}`,
@@ -48,7 +54,7 @@ async function cargarArchivos() {
             console.log('renderizarTableArchivos completado');
             
             if (data.categories) {
-                updateCategoryFilter(data.categories);
+                //updateCategoryFilter(data.categories);
             }
         } else {
             throw new Error(data.message || 'Error desconocido');
@@ -112,14 +118,14 @@ function renderizarTableArchivos(files) {
 }
 
 export function updateCategoryFilter(categories) {
-    const categoryFilter = document.getElementById('categoryFilter');
-    categoryFilter.innerHTML = '<option value="">Todas las categorías</option>';
-    categories.forEach(category => {
-        const option = document.createElement('option');
-        option.value = category.id;
-        option.textContent = category.name;
-        categoryFilter.appendChild(option);
-    });
+    // const categoryFilter = document.getElementById('categoryFilter');
+    // categoryFilter.innerHTML = '<option value="">Todas las categorías</option>';
+    // categories.forEach(category => {
+    //     const option = document.createElement('option');
+    //     option.value = category.id;
+    //     option.textContent = category.name;
+    //     categoryFilter.appendChild(option);
+    // });
 }
 
 
