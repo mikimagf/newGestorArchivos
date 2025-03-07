@@ -1,17 +1,27 @@
 import { showCustomAlerta, showCustomConfirm } from './utils.js';
-export { updateCategoryFilter };
+
 let filesTable;
 let currentPage = 1;
 let pageSize = 10;
-let totalPages = 1
+
+document.addEventListener('DOMContentLoaded', function() {
+    console.log("DOM cargado, iniciando carga de archivos");
+    cargarArchivos();
+    
+    // Agregar event listeners para los filtros
+    document.getElementById('fileSearch').addEventListener('input', cargarArchivos);
+    document.getElementById('categoryFilter').addEventListener('change', cargarArchivos);
+});
 
 async function cargarArchivos() {
+    console.log('Iniciando carga de archivos...');
+    
     const token = localStorage.getItem('token');
     const searchTerm = document.getElementById('fileSearch').value;
     const categoryFilter = document.getElementById('categoryFilter').value;
     
     try {
-        const response = await fetch(`api/files.php?search=${encodeURIComponent(searchTerm)}&category=${categoryFilter}&page=${currentPage}&pageSize=${pageSize}`, {
+        const response = await fetch(`api/files.php?search=${encodeURIComponent(searchTerm)}&category=${categoryFilter}`, {
             method: 'GET',
             headers: {
                 'Authorization': `Bearer ${token}`,
@@ -20,14 +30,28 @@ async function cargarArchivos() {
         
         const data = await response.json();
         
+        console.log('Respuesta completa del servidor:', data);
+        
         if (data.success) {
-            renderizarTableArchivos(data.files);
-            updatePagination(data.totalFiles);
+            let files;
+            if (Array.isArray(data.files)) {
+                files = data.files;
+            } else if (data.files && Array.isArray(data.files.files)) {
+                files = data.files.files;
+            } else {
+                throw new Error('Estructura de archivos no reconocida');
+            }
+            
+            console.log('Archivos recibidos:', files);
+            console.log('Datos de archivos recibidos, llamando a renderizarTableArchivos');
+            renderizarTableArchivos(files);
+            console.log('renderizarTableArchivos completado');
+            
             if (data.categories) {
                 updateCategoryFilter(data.categories);
             }
         } else {
-            showCustomAlerta('Error al cargar archivos: ' + data.message, 'error');
+            throw new Error(data.message || 'Error desconocido');
         }
     } catch (error) {
         console.error('Error:', error);
@@ -36,37 +60,58 @@ async function cargarArchivos() {
 }
 
 function renderizarTableArchivos(files) {
+    console.log("Renderizando tabla de Archivos");
+    
     const container = document.getElementById('filesTable');
-    if (filesTable) {
+    
+    // Destruir la tabla existente si ya existe
+    if (filesTable && typeof filesTable.destroy === 'function') {
         filesTable.destroy();
     }
-    filesTable = new Handsontable(container, {
-        data: files,
-        columns: [
-            { data: 'id', title: 'ID', readOnly: true, width: 50 },
-            { data: 'name', title: 'Nombre', width: 200 },
-            { data: 'filename', title: 'Nombre del archivo', width: 200 },
-            { data: 'category_name', title: 'Categoría', width: 150 },
-            { data: 'upload_date', title: 'Fecha de subida', width: 150 },
-            {
-                data: 'actions',
-                title: 'Acciones',
-                renderer: function (instance, td, row, col, prop, value, cellProperties) {
-                    const downloadBtn = `<button class="btn btn-primary btn-sm me-2" onclick="downloadFile(${files[row].id})">Descargar</button>`;
-                    const deleteBtn = `<button class="btn btn-danger btn-sm" onclick="deleteFile(${files[row].id})">Eliminar</button>`;
-                    td.innerHTML = downloadBtn + deleteBtn;
-                    return td;
-                },
-                width: 200
+
+    // Limpiar el contenido del contenedor
+    container.innerHTML = '';
+
+    // Crear la estructura de la tabla
+    const table = document.createElement('table');
+    table.className = 'table table-striped table-bordered';
+    container.appendChild(table);
+
+    // Crear una nueva tabla
+    filesTable = new simpleDatatables.DataTable(table, {
+        data: {
+            headings: ["ID", "Nombre", "Nombre del archivo", "Categoría", "Fecha de subida", "Acciones"],
+            data: files.map(file => [
+                file.id,
+                file.name,
+                file.filename,
+                file.category_name,
+                file.upload_date,
+                `<button class="btn btn-primary btn-sm me-2" onclick="downloadFile(${file.id})">Descargar</button>
+                 <button class="btn btn-danger btn-sm" onclick="deleteFile(${file.id})">Eliminar</button>`
+            ])
+        },
+        perPage: pageSize,
+        perPageSelect: [10, 25, 50, 100],
+        labels: {
+            placeholder: "Buscar...",
+            perPage: "Registros por página",
+            noRows: "No se encontraron registros",
+            info: "Mostrando {start} a {end} de {rows} registros",
+            noResults: "No hay resultados que coincidan con su búsqueda",
+            paginate: {
+                first: "Primero",
+                previous: "Anterior",
+                next: "Siguiente",
+                last: "Último"
             }
-        ],
-        rowHeaders: true,
-        colHeaders: true,
-        height: 'auto',
-        licenseKey: 'non-commercial-and-evaluation'
+        }
     });
+
+    console.log("Tabla creada:", filesTable);
 }
-function updateCategoryFilter(categories) {
+
+export function updateCategoryFilter(categories) {
     const categoryFilter = document.getElementById('categoryFilter');
     categoryFilter.innerHTML = '<option value="">Todas las categorías</option>';
     categories.forEach(category => {
@@ -77,47 +122,35 @@ function updateCategoryFilter(categories) {
     });
 }
 
-window.downloadFile = function(id) {
+
+function downloadFile(id) {
     const token = localStorage.getItem('token');
     window.location.href = `api/files.php?action=download&id=${id}&token=${token}`;
 }
-function updatePagination(totalFiles) {
-    totalPages = Math.ceil(totalFiles / pageSize);
-    const paginationElement = document.getElementById('pagination');
-    let paginationHTML = '';
-    for (let i = 1; i <= totalPages; i++) {
-        paginationHTML += `<button class="btn btn-sm ${i === currentPage ? 'btn-primary' : 'btn-outline-primary'}" onclick="cambiarPagina(${i})">${i}</button> `;
-    }
-    paginationElement.innerHTML = paginationHTML;
-}
-window.cambiarPagina = function(page) {
-    currentPage = page;
-    cargarArchivos();
-}
-window.deleteFile = function(id) {
-    showCustomConfirm('¿Estás seguro de que quieres eliminar este archivo?', () => {
+
+function deleteFile(id) {
+    showCustomConfirm('¿Estás seguro de que quieres eliminar este archivo?', async () => {
         const token = localStorage.getItem('token');
-        fetch('api/files.php', {
-            method: 'DELETE',
-            headers: {
-                'Content-Type': 'application/json',
-                'Authorization': `Bearer ${token}`,
-            },
-            body: JSON.stringify({ id: id }),
-        })
-            .then(response => response.json())
-            .then(data => {
-                if (data.success) {
-                    cargarArchivos();
-                    showCustomAlerta("Archivo eliminado con éxito", 'success');
-                } else {
-                    showCustomAlerta('Error al eliminar archivo: ' + data.message, 'error');
-                }
-            })
-            .catch(error => {
-                console.error('Error:', error);
-                showCustomAlerta('Error al eliminar archivo', 'error');
+        try {
+            const response = await fetch('api/files.php', {
+                method: 'DELETE',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${token}`,
+                },
+                body: JSON.stringify({ id: id }),
             });
+            const data = await response.json();
+            if (data.success) {
+                cargarArchivos();
+                showCustomAlerta("Archivo eliminado con éxito", 'success');
+            } else {
+                showCustomAlerta('Error al eliminar archivo: ' + data.message, 'error');
+            }
+        } catch (error) {
+            console.error('Error:', error);
+            showCustomAlerta('Error al eliminar archivo', 'error');
+        }
     });
 }
 
@@ -153,143 +186,52 @@ async function uploadFile(file, fileName, categoryId) {
             if (!data.success) {
                 throw new Error(data.message);
             }
-
-            // Actualizar la barra de progreso
-            updateProgressBar((chunkNumber + 1) / totalChunks * 100);
-
         } catch (error) {
             console.error('Error uploading chunk:', error);
-            showCustomAlerta('Error al subir archivo: ' + error.message, 'error');
             throw error;
         }
     }
-
-    console.log('File upload completed');
-    showCustomAlerta('Archivo subido con éxito', 'success');
-    cargarArchivos();
-    const modal = bootstrap.Modal.getInstance(document.getElementById('uploadFileModal'));
-    modal.hide();
 }
-
-// Función para actualizar la barra de progreso
-function updateProgressBar(percentage) {
-    const progressBar = document.getElementById('uploadProgress');
-    if (progressBar) {
-        progressBar.style.width = `${percentage}%`;
-        progressBar.textContent = `${Math.round(percentage)}%`;
-    }
-}
-
-// Reemplazar la función guardarArchivo existente con esta nueva versión
-async function guardarArchivo() {
-    const fileName = document.getElementById('fileName')?.value;
-    const fileCategory = document.getElementById('fileCategory')?.value;
-    const fileUpload = document.getElementById('fileUpload')?.files?.[0];
-
-    if (fileName && fileCategory && fileUpload) {
-        try {
-            await uploadFile(fileUpload, fileName, fileCategory);
-            showCustomAlerta('Archivo subido con éxito', 'success');
-            const modal = document.getElementById('uploadFileModal');
-            const bootstrapModal = bootstrap.Modal.getInstance(modal);
-            if (bootstrapModal) {
-                bootstrapModal.hide();
-            }
-            await cargarArchivos();
-        } catch (error) {
-            console.error('Error:', error);
-            showCustomAlerta('Error al subir archivo: ' + error.message, 'error');
-        }
-    } else {
-        showCustomAlerta('Por favor, complete todos los campos', 'warning');
-    }
-}
-
-// El resto de tu código permanece igual...
 
 function openUploadModal() {
-    document.getElementById('uploadFileForm').reset();
-    loadCategories();
-    const modal = new bootstrap.Modal(document.getElementById('uploadFileModal'));
-    modal.show();
+    fetch('modals/upload-file-modal.html')
+        .then(response => response.text())
+        .then(html => {
+            document.body.insertAdjacentHTML('beforeend', html);
+            const modal = new bootstrap.Modal(document.getElementById('uploadFileModal'));
+            modal.show();
+
+            document.getElementById('uploadForm').addEventListener('submit', handleFileUpload);
+        });
 }
 
-async function loadCategories() {
-    const token = localStorage.getItem('token');
+async function handleFileUpload(event) {
+    event.preventDefault();
+    const fileInput = document.getElementById('fileInput');
+    const file = fileInput.files[0];
+    const fileName = document.getElementById('fileName').value;
+    const categoryId = document.getElementById('fileCategory').value;
+
+    if (!file || !fileName) {
+        showCustomAlerta('Por favor, seleccione un archivo y proporcione un nombre', 'warning');
+        return;
+    }
+
     try {
-        const response = await fetch('api/categories.php', {
-            method: 'GET',
-            headers: {
-                'Authorization': `Bearer ${token}`,
-            },
-        });
-        
-        const data = await response.json();
-        
-        if (data.success) {
-            const categorySelect = document.getElementById('fileCategory');
-            categorySelect.innerHTML = '<option value="">Seleccione una categoría</option>';
-            
-            data.categories.forEach(category => {
-                const option = document.createElement('option');
-                option.value = category.id;
-                option.textContent = category.name;
-                categorySelect.appendChild(option);
-            });
-        } else {
-            console.error('Error al cargar categorías:', data.message);
-            alert('Error al cargar categorías: ' + data.message);
-        }
+        await uploadFile(file, fileName, categoryId);
+        showCustomAlerta('Archivo subido con éxito', 'success');
+        const modal = bootstrap.Modal.getInstance(document.getElementById('uploadFileModal'));
+        modal.hide();
+        cargarArchivos();
     } catch (error) {
         console.error('Error:', error);
-        alert('Error al cargar categorías');
+        showCustomAlerta('Error al subir archivo: ' + error.message, 'error');
     }
 }
 
-document.addEventListener('DOMContentLoaded', function() {
-    document.getElementById('uploadFileBtn').addEventListener('click', openUploadModal);
-    cargarArchivos();
+// Exponer funciones necesarias globalmente
+window.downloadFile = downloadFile;
+window.deleteFile = deleteFile;
+window.openUploadModal = openUploadModal;
 
-    const fileSearchInput = document.getElementById('fileSearch');
-    fileSearchInput.addEventListener('input', debounce(() => {
-        currentPage = 1;
-        cargarArchivos();
-    }, 300));
-
-    const categoryFilter = document.getElementById('categoryFilter');
-    categoryFilter.addEventListener('change', () => {
-        currentPage = 1;
-        cargarArchivos();
-    });
-
-    const fileSizeSelect = document.getElementById('filePageSize');
-    fileSizeSelect.addEventListener('change', () => {
-        pageSize = parseInt(fileSizeSelect.value);
-        currentPage = 1;
-        cargarArchivos();
-    });
-    // Agregar un event listener al documento para manejar clics en el botón saveFileBtn
-    document.addEventListener('click', function(event) {
-        if (event.target && event.target.id === 'saveFileBtn') {
-            guardarArchivo();
-        }
-    });
-});
-function debounce(func, wait) {
-    let timeout;
-    return function executedFunction(...args) {
-        const later = () => {
-            clearTimeout(timeout);
-            func(...args);
-        };
-        clearTimeout(timeout);
-        timeout = setTimeout(later, wait);
-    };
-}
-// Agregar un event listener para cuando el modal de carga de archivos se haya cargado
-document.addEventListener('uploadFileModalLoaded', function() {
-    console.log('Modal de carga de archivos cargado');
-    // Aquí puedes agregar cualquier inicialización adicional necesaria para el modal
-});
-
-window.cargarArchivos = cargarArchivos;
+export { cargarArchivos, downloadFile, deleteFile, openUploadModal };

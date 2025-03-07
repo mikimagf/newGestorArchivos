@@ -1,4 +1,5 @@
 
+import { cargarArchivos } from './fileManagement.js';
 document.addEventListener('DOMContentLoaded', async function () {
     const token = localStorage.getItem('token');
     if (!token) {
