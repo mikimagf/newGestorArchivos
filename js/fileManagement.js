@@ -17,23 +17,28 @@ async function cargarArchivos() {
     console.log('Iniciando carga de archivos...');
     
     const token = localStorage.getItem('token');
+    
+
+
     //const searchTerm = document.getElementById('fileSearch').value;
     //const categoryFilter = document.getElementById('categoryFilter').value;
     
     try {
+        /*---- OPCION 1 ----*/
     //    const response = await fetch(`api/files.php?search=${encodeURIComponent(searchTerm)}&category=${categoryFilter}`, {
     //         method: 'GET',
     //         headers: {
     //             'Authorization': `Bearer ${token}`,
     //         },
     //     });
+    /*---- OPCION 2 ----*/
        const response = await fetch(`api/files.php`, {
             method: 'GET',
             headers: {
                 'Authorization': `Bearer ${token}`,
             },
         });
-        
+      
         const data = await response.json();
         
         console.log('Respuesta completa del servidor:', data);
@@ -99,8 +104,11 @@ function renderizarTableArchivos(files) {
         },
         perPage: pageSize,
         perPageSelect: [10, 25, 50, 100],
+        columns:[
+            //{ select: 3, type: "select", options: getUniqueCategories(files) }
+        ],
         labels: {
-            placeholder: "Buscar...",
+            placeholder: "Buscar nombre o categoria...",
             perPage: "Registros por página",
             noRows: "No se encontraron registros",
             info: "Mostrando {start} a {end} de {rows} registros",
@@ -111,12 +119,25 @@ function renderizarTableArchivos(files) {
                 next: "Siguiente",
                 last: "Último"
             }
+        },
+        layout: {
+            top: "{search}",
+            bottom: "{select}{info}{pager}"
+        },
+        searchable: true,
+        responsive: true,
+        language: {
+            url: '//cdn.datatables.net/plug-ins/1.10.24/i18n/Spanish.json'
         }
     });
 
     console.log("Tabla creada:", filesTable);
 }
-
+// Función auxiliar para obtener categorías únicas
+function getUniqueCategories(files) {
+    const categories = new Set(files.map(file => file.category_name));
+    return Array.from(categories);
+}
 export function updateCategoryFilter(categories) {
     // const categoryFilter = document.getElementById('categoryFilter');
     // categoryFilter.innerHTML = '<option value="">Todas las categorías</option>';
@@ -134,10 +155,11 @@ function downloadFile(id) {
     window.location.href = `api/files.php?action=download&id=${id}&token=${token}`;
 }
 
-function deleteFile(id) {
-    showCustomConfirm('¿Estás seguro de que quieres eliminar este archivo?', async () => {
-        const token = localStorage.getItem('token');
-        try {
+window.deleteFile = async function(id) {
+    try {
+        const result = await showCustomConfirm('¿Estás seguro de que quieres eliminar este archivo?');
+        if (result.isConfirmed) {
+            const token = localStorage.getItem('token');
             const response = await fetch('api/files.php', {
                 method: 'DELETE',
                 headers: {
@@ -148,16 +170,16 @@ function deleteFile(id) {
             });
             const data = await response.json();
             if (data.success) {
-                cargarArchivos();
+                await cargarArchivos();
                 showCustomAlerta("Archivo eliminado con éxito", 'success');
             } else {
                 showCustomAlerta('Error al eliminar archivo: ' + data.message, 'error');
             }
-        } catch (error) {
-            console.error('Error:', error);
-            showCustomAlerta('Error al eliminar archivo', 'error');
         }
-    });
+    } catch (error) {
+        console.error('Error:', error);
+        showCustomAlerta('Error al eliminar archivo', 'error');
+    }
 }
 
 async function uploadFile(file, fileName, categoryId) {
@@ -237,7 +259,6 @@ async function handleFileUpload(event) {
 
 // Exponer funciones necesarias globalmente
 window.downloadFile = downloadFile;
-window.deleteFile = deleteFile;
 window.openUploadModal = openUploadModal;
 
-export { cargarArchivos, downloadFile, deleteFile, openUploadModal };
+export { cargarArchivos, downloadFile, openUploadModal };

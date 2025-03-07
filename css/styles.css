@@ -171,3 +171,24 @@ body {
 .form-control.is-invalid ~ .invalid-tooltip {
     display: block;
 }
+/* Estilos para el botón de búsqueda de SimpleDatatables */
+.dataTable-input {
+    font-size: 16px;
+    padding: 10px 15px;
+    width: 400px;
+    border: 1px solid #ced4da;
+    border-radius: 4px;
+}
+
+.dataTable-top {
+    padding: 15px 0;
+}
+
+/* Ajuste para el contenedor de la tabla */
+.dataTable-wrapper {
+    margin-top: 20px;
+}
+/* Estilos para el filtro de categorías */
+#categoryFilterContainer {
+    background-color: #ffeeee;
+  }
