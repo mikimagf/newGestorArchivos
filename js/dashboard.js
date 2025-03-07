@@ -50,21 +50,24 @@ document.addEventListener('DOMContentLoaded', async function () {
         categoriesContent.style.display = 'none';
         filesContent.style.display = 'none';
         loadDashboardData();
+        setActiveTab(dashboardLink);
     }
 
     async function showCategories() {
         dashboardContent.style.display = 'none';
         categoriesContent.style.display = 'block';
         filesContent.style.display = 'none';
-        cargarCategorias();
-      
+       await cargarCategorias();
+       setActiveTab(categoriesLink);
+
     }
 
     async function showFiles() {
         dashboardContent.style.display = 'none';
         categoriesContent.style.display = 'none';
         filesContent.style.display = 'block';
-        cargarArchivos();
+      await  cargarArchivos();
+      setActiveTab(filesLink);
     }
 
     async function logout() {
@@ -103,8 +106,38 @@ document.addEventListener('DOMContentLoaded', async function () {
             });
     }
 
+    function setActiveTab(activeLink) {
+        [dashboardLink, categoriesLink, filesLink].forEach(link => {
+            link.classList.remove('active');
+        });
+        activeLink.classList.add('active');
+    }
 
     // Inicialmente, mostrar el dashboard
     showDashboard();
 
+    //  // Manejar la navegación basada en el hash de la URL
+    //  function handleNavigation() {
+    //     const hash = window.location.hash;
+    //     switch (hash) {
+    //         case '#dashboard':
+    //             showDashboard();
+    //             break;
+    //         case '#categories':
+    //             showCategories();
+    //             break;
+    //         case '#files':
+    //             showFiles();
+    //             break;
+    //         default:
+    //             showDashboard();
+    //             break;
+    //     }
+    // }
+
+    // // Escuchar cambios en el hash de la URL
+    // window.addEventListener('hashchange', handleNavigation);
+
+    // // Inicialmente, manejar la navegación
+    // handleNavigation();
 }); 

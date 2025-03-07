@@ -161,10 +161,10 @@ function renderizarTableArchivos(files) {
     });
 }
 // Función auxiliar para obtener categorías únicas
-function getUniqueCategories(files) {
-    const categories = new Set(files.map(file => file.category_name));
-    return Array.from(categories);
-}
+// function getUniqueCategories(files) {
+//     const categories = new Set(files.map(file => file.category_name));
+//     return Array.from(categories);
+// }
 export function updateCategoryFilter(categories) {
     // const categoryFilter = document.getElementById('categoryFilter');
     // categoryFilter.innerHTML = '<option value="">Todas las categorías</option>';

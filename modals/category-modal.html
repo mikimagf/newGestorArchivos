@@ -1,41 +1,25 @@
-<div class="modal fade" id="uploadFileModal" tabindex="-1" aria-labelledby="uploadFileModalLabel" aria-hidden="true">
+<div class="modal fade" id="categoryModal" tabindex="-1" aria-labelledby="categoryModalLabel" aria-hidden="true">
   <div class="modal-dialog">
     <div class="modal-content">
       <div class="modal-header">
-        <h5 class="modal-title" id="uploadFileModalLabel">Subir Archivo</h5>
+        <h5 class="modal-title" id="categoryModalTitle">Agregar Categoría</h5>
         <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
       </div>
       <div class="modal-body">
-        <form id="uploadFileForm" novalidate>
+        <form id="categoryForm" novalidate>
+          <input type="hidden" id="categoryId">
           <div class="mb-3">
-            <label for="fileName" class="form-label">Nombre del Archivo</label>
-            <input type="text" class="form-control" id="fileName" required>
+            <label for="categoryName" class="form-label">Nombre de la Categoría</label>
+            <input type="text" class="form-control" id="categoryName" required>
             <div class="invalid-feedback">
-              Por favor, ingrese un nombre para el archivo.
-            </div>
-          </div>
-          <div class="mb-3">
-            <label for="fileCategory" class="form-label">Categoría</label>
-            <select class="form-select" id="fileCategory" required>
-              <option value="">Seleccione una categoría</option>
-              <!-- Las opciones se cargarán dinámicamente -->
-            </select>
-            <div class="invalid-feedback">
-              Por favor, seleccione una categoría.
-            </div>
-          </div>
-          <div class="mb-3">
-            <label for="fileInput" class="form-label">Archivo PDF</label>
-            <input type="file" class="form-control" id="fileInput" accept=".pdf" required>
-            <div class="invalid-feedback">
-              Por favor, seleccione un archivo PDF.
+              Por favor, ingrese un nombre para la categoría.
             </div>
           </div>
         </form>
       </div>
       <div class="modal-footer">
         <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cerrar</button>
-        <button type="button" class="btn btn-primary" id="uploadFileBtn">Subir</button>
+        <button type="button" class="btn btn-primary" id="saveCategoryBtn">Guardar</button>
       </div>
     </div>
   </div>
