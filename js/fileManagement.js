@@ -81,24 +81,29 @@ async function cargarArchivos() {
 }
 
 function renderizarTableArchivos(files) {
-    //console.log("Renderizando tabla de Archivos");
+    console.log("Iniciando renderización de tabla de Archivos");
+    console.log("Número total de archivos a renderizar:", files.length);
 
     const container = document.getElementById('filesTable');
 
     // Destruir la tabla existente si ya existe
     if (filesTable && typeof filesTable.destroy === 'function') {
+        console.log("Destruyendo tabla existente");
         filesTable.destroy();
     }
 
     // Limpiar el contenido del contenedor
+    console.log("Limpiando contenedor de la tabla");
     container.innerHTML = '';
 
     // Crear la estructura de la tabla
+    console.log("Creando nueva estructura de tabla");
     const table = document.createElement('table');
     table.className = 'table table-striped table-bordered';
     container.appendChild(table);
 
     // Crear una nueva tabla
+    console.log("Inicializando nueva tabla con simpleDatatables");
     filesTable = new simpleDatatables.DataTable(table, {
         data: {
             headings: ["ID", "Nombre", "Nombre del archivo", "Categoría", "Fecha de subida", "Acciones"],
@@ -134,6 +139,7 @@ function renderizarTableArchivos(files) {
             top: "{search}",
             bottom: "{select}{info}{pager}"
         },
+        dom: '<"top"f>rt<"bottom"lip><"clear">',
         searchable: true,
         responsive: true,
         language: {
@@ -142,6 +148,17 @@ function renderizarTableArchivos(files) {
     });
 
     console.log("Tabla creada:", filesTable);
+    console.log("Configuración de la tabla:", filesTable.options);
+
+    // Verificar la virtualización
+    console.log("Número de filas renderizadas inicialmente:", document.querySelectorAll('#filesTable tbody tr').length);
+    console.log("Altura total de la tabla:", table.offsetHeight);
+
+    // Agregar un listener para el evento de scroll
+    container.addEventListener('scroll', () => {
+        console.log("Scroll detectado");
+        console.log("Filas visibles:", document.querySelectorAll('#filesTable tbody tr:not(.htHidden)').length);
+    });
 }
 // Función auxiliar para obtener categorías únicas
 function getUniqueCategories(files) {
