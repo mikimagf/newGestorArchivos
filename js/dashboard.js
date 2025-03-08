@@ -1,15 +1,62 @@
+import { cargarArchivos,initializeFileManagement } from './fileManagement.js';
+import { initializeCategories } from './categories.js';
 
-import { cargarArchivos } from './fileManagement.js';
 document.addEventListener('DOMContentLoaded', async function () {
-   
     const token = localStorage.getItem('token');
-    
+
     if (!token) {
         window.location.href = 'index';
         return;
     }
 
+    // Función para cargar componentes de la interfaz
+    async function cargarInterfaz() {
+        await cargarMenuNavegacion();
+        await cargarModal("categoryModalPlaceholder", "category-modal.html");
+        await cargarModal('uploadFileModalPlaceholder', 'upload-file-modal.html');
+        await cargarContenidoDashboard();
+        await cargarContenidoCategorias();
+        await cargarContenidoArchivos();
+        await initializeCategories();
+        await initializeFileManagement();
+    }
 
+    // Función para cargar datos
+    async function cargarDatos() {
+        await loadDashboardData();
+        // Aquí puedes agregar más llamadas a funciones que carguen datos
+    }
+
+    // Cargar la interfaz primero
+    await cargarInterfaz();
+
+    // Configurar event listeners
+    configureEventListeners();
+
+    // Cargar los datos después de que la interfaz esté lista
+    await cargarDatos();
+
+    // Mostrar el dashboard por defecto
+   await showDashboard();
+
+    // Resto de tus funciones...
+    async function cargarModal(modalId, modalFile) {
+        try {
+
+            const response = await fetch(`modals/${modalFile}`);
+            //const response = await fetch('modals/'+modalFile);
+            const modalContent = await response.text();
+            const modalElement = document.getElementById(modalId);
+            if (modalElement) {
+                modalElement.innerHTML = modalContent;
+                // Emitir un evento personalizado cuando el modal se haya cargado
+                document.dispatchEvent(new CustomEvent(`${modalId}Loaded`));
+            }
+        } catch (error) {
+            console.error("error entontrado:", error);
+
+        }
+    }
     async function cargarMenuNavegacion() {
         try {
             const response = await fetch('components/menu_navegacion.html');
@@ -17,8 +64,8 @@ document.addEventListener('DOMContentLoaded', async function () {
             const navPlaceholder = document.getElementById('navPlaceholder');
             if (navPlaceholder) {
                 navPlaceholder.innerHTML = menuContent;
-                configureEventListeners();
                 
+
                 document.dispatchEvent(new CustomEvent('navPlaceholderLoaded'));
             }
         } catch (error) {
@@ -26,7 +73,7 @@ document.addEventListener('DOMContentLoaded', async function () {
         }
     }
 
-    async function configureEventListeners() {
+    function configureEventListeners() {
         const dashboardLink = document.getElementById('dashboardLink');
         const categoriesLink = document.getElementById('categoriesLink');
         const filesLink = document.getElementById('filesLink');
@@ -36,8 +83,10 @@ document.addEventListener('DOMContentLoaded', async function () {
         if (categoriesLink) categoriesLink.addEventListener('click', showCategories);
         if (filesLink) filesLink.addEventListener('click', showFiles);
         if (logoutBtn) logoutBtn.addEventListener('click', logout);
-    };
-   
+
+       
+    }
+
     async function loadDashboardData() {
         fetch('api/dashboard.php', {
             method: 'GET',
@@ -68,73 +117,71 @@ document.addEventListener('DOMContentLoaded', async function () {
                 alert('Error al cargar datos del dashboard');
             });
     }
+
     async function cargarContenidoDashboard() {
         try {
+            //---- contenido dashboard ----
             const response = await fetch('components/pages/dashboard/dashboard-content.html');
             const content = await response.text();
             document.getElementById('dashboardContentPlaceholder').innerHTML = content;
-            
-            loadDashboardData();
+            //loadDashboardData();
         } catch (error) {
             console.error('Error al cargar el contenido del dashboard:', error);
         }
     }
 
+    async function cargarContenidoCategorias() {
+        try {
+            const response = await fetch('components/pages/categorias/categorias-content.html');
+            const content = await response.text();
+            document.getElementById('categoriasContentPlaceholder').innerHTML = content;
+            // Aquí puedes llamar a una función para cargar datos de categorías si es necesario
+        } catch (error) {
+            console.error('Error al cargar el contenido de categorías:', error);
+        }
+    }
+
+    async function cargarContenidoArchivos() {
+        try {
+            const response = await fetch('components/pages/archivos/archivos-content.html');
+            const content = await response.text();
+            document.getElementById('archivosContentPlaceholder').innerHTML = content;
+            // Aquí puedes llamar a una función para cargar datos de archivos si es necesario
+        } catch (error) {
+            console.error('Error al cargar el contenido de archivos:', error);
+        }
+    }
+
+   async function showDashboard() {
+        setActiveTab(dashboardLink);
+        dashboardContent.style.display = 'block';
+        categoriesContent.style.display = 'none';
+        filesContent.style.display = 'none';
+      //await  loadDashboardData();
+    }
+
+  async  function showCategories() {
+        setActiveTab(categoriesLink);
+        //await cargarCategorias();
+        dashboardContent.style.display = 'none';
+        categoriesContent.style.display = 'block';
+        filesContent.style.display = 'none';
+    }
+
+   async function showFiles() {
+        setActiveTab(filesLink);
+       // await cargarArchivos();
+        dashboardContent.style.display = 'none';
+        categoriesContent.style.display = 'none';
+        filesContent.style.display = 'block';
+    }
     async function setActiveTab(activeLink) {
         [dashboardLink, categoriesLink, filesLink].forEach(link => {
             link.classList.remove('active');
         });
         activeLink.classList.add('active');
     }
-    async function showDashboard() {
-        setActiveTab(dashboardLink);
-        await cargarContenidoDashboard();
-        const dashboardContent = document.getElementById('dashboardContent');
-        const categoriesContent = document.getElementById('categoriesContent');
-        const filesContent = document.getElementById('filesContent');
-        dashboardContent.style.display = 'block';
-        categoriesContent.style.display = 'none';
-        filesContent.style.display = 'none';
-    }
-
-    // Función para cargar un modal
-    async function cargarModal(modalId, modalFile) {
-        try {
-
-            const response = await fetch(`modals/${modalFile}`);
-            //const response = await fetch('modals/'+modalFile);
-            const modalContent = await response.text();
-            const modalElement = document.getElementById(modalId);
-            if (modalElement) {
-                modalElement.innerHTML = modalContent;
-                // Emitir un evento personalizado cuando el modal se haya cargado
-                document.dispatchEvent(new CustomEvent(`${modalId}Loaded`));
-            }
-        } catch (error) {
-            console.error("error entontrado:", error);
-
-        }
-    }
-
-
-    async function showCategories() {
-        dashboardContent.style.display = 'none';
-        categoriesContent.style.display = 'block';
-        filesContent.style.display = 'none';
-        await cargarCategorias();
-        setActiveTab(categoriesLink);
-
-    }
-
-    async function showFiles() {
-        dashboardContent.style.display = 'none';
-        categoriesContent.style.display = 'none';
-        filesContent.style.display = 'block';
-        setActiveTab(filesLink);
-        await cargarArchivos();
-    }
-
-    async function logout() {
+   async function logout() {
         try {
             // Obtener el token actual
             const token = localStorage.getItem('token');
@@ -170,7 +217,6 @@ document.addEventListener('DOMContentLoaded', async function () {
             alert('Error durante el logout: ' + error.message);
         }
     }
-
     function clearSessionData() {
         // Eliminar el token del almacenamiento local
         localStorage.removeItem('token');
@@ -186,22 +232,10 @@ document.addEventListener('DOMContentLoaded', async function () {
             document.cookie = c.replace(/^ +/, "").replace(/=.*/, "=;expires=" + new Date().toUTCString() + ";path=/");
         });
     }
-
-    await cargarMenuNavegacion();
-    await showDashboard();
-    await showFiles()
-    await showCategories();
-
-
-    // Cargar los modales
-    await cargarModal("categoryModalPlaceholder", "category-modal.html");
-    await cargarModal('uploadFileModalPlaceholder', 'upload-file-modal.html');
-
     document.addEventListener('navPlaceholderLoaded', () => {
         const logoutBtn = document.getElementById('logoutBtn');
         if (logoutBtn) {
             logoutBtn.addEventListener('click', logout);
         }
     });
-
-}); 
+});

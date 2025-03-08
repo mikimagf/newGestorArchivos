@@ -16,10 +16,7 @@
   <!-- ===== estilos locales =====-->
   <link rel="stylesheet" href="css/styles.css" />
   <link rel="stylesheet" href="css/responsive.css" />
-  <!-- ===== DATA TABLES =====-->
-  <!-- <link href="assets/bootstrap/dataTables.bootstrap5.min.css" rel="stylesheet">
-  <script src="assets/bootstrap/simple-datatables@9.0.0.js"></script>
-   -->
+  
    <!-- ===== DATATABLES =====-->
   <link href="https://cdn.jsdelivr.net/npm/simple-datatables@latest/dist/style.css" rel="stylesheet" type="text/css">
     <script src="https://cdn.jsdelivr.net/npm/simple-datatables@latest"></script>
@@ -31,48 +28,13 @@
   <div id="alertPlaceholder" style="position: fixed; top: 20px; left: 50%; transform: translateX(-50%); z-index: 9999; width: 80%; max-width: 800px;"></div>
   <!-- ===== MENU DE NAVEGACION =====-->
   <div id="navPlaceholder"></div>
-  
   <div class="container mt-4">
     <!-- ===== PAGINA DASHBOARD =====-->
     <div id="dashboardContentPlaceholder"></div>
     <!-- ===== CATEGORIAS =====-->
-    <div id="categoriesContent" style="display: none">
-      <h2>Categorías</h2>
-      <button class="btn btn-primary mb-3" id="addCategoryBtn"> Agregar Categoría </button> 
-      <div class="row mb-3">
-        <div class="col-md-6">
-          <input type="text" class="form-control" id="categorySearch" placeholder="Buscar categorías..." />
-        </div>
-        <div class="col-md-6">
-          <select class="form-select" id="categoryPageSize">
-            <option value="10">Mostrar 10</option>
-            <option value="25">Mostrar 25</option>
-            <option value="50">Mostrar 50</option>
-            <option value="100">Mostrar 100</option>
-          </select>
-        </div>
-      </div>
-      <div id="categoriesTable"></div>
-      <div id="pagination" class="mt-3"></div>
-    </div>
+    <div id="categoriasContentPlaceholder"></div>
     <!-- ===== ARCHIVOS =====-->
-    <div id="filesContent" style="display: none">
-      <h2>Archivos</h2>
-      <div class="row mb-3">
-        <div class="col-md-4">
-          <button class="btn btn-primary" id="uploadFileBtn">Subir Archivo</button>
-        </div>
-      </div>
-      
-      <!-- tabla de archivos -->
-      <div id="filesTable"></div>
-      <!-- paginaciones -->
-      <nav aria-label="Page navigation">
-        <ul class="pagination justify-content-center mt-3" id="filePagination">
-          <!-- La paginación se generará dinámicamente aquí -->
-        </ul>
-      </nav>
-    </div>
+    <div id="archivosContentPlaceholder"></div>
     <!-- ===== MODAL DE AGREGAR CATEGORIA =====-->
     <div id="categoryModalPlaceholder"></div>
     <!-- ===== MODAL DE AGREGAR ARCHIVOS =====-->
@@ -81,8 +43,8 @@
     <script src="https://cdn.jsdelivr.net/npm/handsontable/dist/handsontable.full.min.js"></script>
     <script type="module" src="js/utils.js"></script>
     <script type="module" src="js/dashboard.js"></script>
-    <script type="module" src="js/categories.js"></script>
-    <script type="module" src="js/fileManagement.js"></script>
+    <!-- <script type="module" src="js/categories.js"></script>
+    <script type="module" src="js/fileManagement.js"></script> -->
 </body>
 
 </html>

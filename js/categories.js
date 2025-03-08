@@ -1,26 +1,63 @@
 import { showCustomAlerta, showCustomConfirm } from './utils.js';
-//import { updateCategoryFilter } from './fileManagement.js';
 
-
-// @ts-ignore
-async function getAlertFunctions() {
-    const utils = await import('./utils.js');
-    return {
-        showAlert: utils.showAlert,
-        showCustomAlerta: utils.showCustomAlerta
-    };
-}
 
 let categoriesTable;
 let allCategories = [];
 let currentPage = 1;
 let itemsPerPage = 10;
 
+export function initializeCategories() {
+    console.log('Inicializando módulo de categorías');
+
+    const addCategoryBtn = document.getElementById('addCategoryBtn');
+    if (addCategoryBtn) {
+        addCategoryBtn.addEventListener('click', function () { 
+            const modal = new bootstrap.Modal(document.getElementById('categoryModal'));
+            modal.show();
+        });
+    } else {
+        console.warn('El botón "Agregar Categoría" no se encontró en el DOM');
+    }
+
+    const categorySearch = document.getElementById('categorySearch');
+    if (categorySearch) {
+        categorySearch.addEventListener('input', filtrarYRenderizarCategorias);
+    } else {
+        console.warn('El campo de búsqueda de categorías no se encontró en el DOM');
+    }
+
+    const categoryPageSize = document.getElementById('categoryPageSize');
+    if (categoryPageSize) {
+        categoryPageSize.addEventListener('change', () => {
+            currentPage = 1;
+            filtrarYRenderizarCategorias();
+        });
+    } else {
+        console.warn('El selector de tamaño de página de categorías no se encontró en el DOM');
+    }
+
+    document.addEventListener('click', function (event) {
+        if (event.target && event.target.id === 'saveCategoryBtn') {
+            guardarCategoria();
+        }
+    });
+
+    document.addEventListener('keypress', function (event) {
+        if (event.target && event.target.id === 'categoryName' && event.key === 'Enter') {
+            event.preventDefault(); // Prevenir el comportamiento por defecto del formulario
+            guardarCategoria();
+        }
+    });
+
+    // Cargar las categorías iniciales
+    cargarCategorias();
+}
+
 async function getShowCustomAlerta() {
     const utils = await import('./utils.js');
     return utils.showCustomAlerta;
 }
-async function cargarCategorias() {
+ async function cargarCategorias() {
     const token = localStorage.getItem('token');
     try {
         const response = await fetch('api/categories.php', {
@@ -270,18 +307,6 @@ async function guardarCategoria() {
     }
 }
 
-// @ts-ignore
-document.getElementById('addCategoryBtn').addEventListener('click', function () { 
-    // @ts-ignore
-    document.getElementById('categoryModalTitle').textContent = 'Agregar Categoría';
-    // @ts-ignore
-    document.getElementById('categoryId').value = '';
-    // @ts-ignore
-    document.getElementById('categoryName').value = '';
-    // @ts-ignore
-    const modal = new bootstrap.Modal(document.getElementById('categoryModal'));
-    modal.show();
-});
 
 document.addEventListener('keypress', function (event) {
     if (event.target && event.target.id === 'categoryName' && event.key === 'Enter') {
@@ -290,14 +315,22 @@ document.addEventListener('keypress', function (event) {
     }
 });
 
-// @ts-ignore
-document.getElementById('categorySearch').addEventListener('input', filtrarYRenderizarCategorias);
+// document.getElementById('addCategoryBtn').addEventListener('click', function () { 
+    
+//     // document.getElementById('categoryModalTitle').textContent = 'Agregar Categoría';
+//     // document.getElementById('categoryId').value = '';
+//     // document.getElementById('categoryName').value = '';
+//     const modal = new bootstrap.Modal(document.getElementById('categoryModal'));
+//     modal.show();
+// });
+// // @ts-ignore
+// document.getElementById('categorySearch').addEventListener('input', filtrarYRenderizarCategorias);
 
-// @ts-ignore
-document.getElementById('categoryPageSize').addEventListener('change', () => {
-    currentPage = 1;
-    filtrarYRenderizarCategorias();
-});
+// // @ts-ignore
+// document.getElementById('categoryPageSize').addEventListener('change', () => {
+//     currentPage = 1;
+//     filtrarYRenderizarCategorias();
+// });
 
 
 document.addEventListener('click', function (event) {
@@ -315,8 +348,8 @@ window.canbiodePagina = canbiodePagina;
 // @ts-ignore
 window.editarCategoria = editarCategoria;
 // @ts-ignore
-window.cargarCategorias = cargarCategorias;
-document.addEventListener('DOMContentLoaded', function () {
-    cargarCategorias();
+//window.cargarCategorias = cargarCategorias;
+// document.addEventListener('DOMContentLoaded', function () {
+//     cargarCategorias();
+// });
 
-});

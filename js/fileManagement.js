@@ -4,21 +4,18 @@ let filesTable;
 let currentPage = 1;
 let pageSize = 10;
 
-document.addEventListener('DOMContentLoaded', function () {
+export function initializeFileManagement() {
+    console.log('Inicializando módulo de gestión de archivos');
     document.getElementById('uploadFileBtn').addEventListener('click', openUploadModal);
-
-
-    console.log("DOM cargado, iniciando carga de archivos");
-    cargarArchivos();
-
-   
+    
     document.addEventListener('click', function (event) {
         if (event.target && event.target.id === 'saveFileBtn') {
           
             guardarArchivo();
         }
     });
-});
+    cargarArchivos();
+}
 
 async function cargarArchivos() {
     console.log('Iniciando carga de archivos...');
