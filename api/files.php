@@ -17,14 +17,17 @@ $database = new Database();
 $db = $database->getConnection();
 $tokenHandler = new TokenHandler();
 
-$headers = getallheaders();
-$token = str_replace('Bearer ', '', $headers['Authorization']);
-
-$userId = $tokenHandler->validateToken($token);
-if (!$userId) {
+//=== VALIDACIONES DE TOKEN ===
+$token = $_COOKIE['jwt'];
+$respuesta = $tokenHandler->validateToken($token);
+if ($respuesta===false) {
+    logMessage("(files.php)No se pudo validar el token");
     echo json_encode(['success' => false, 'message' => 'Invalid token']);
     exit;
 }
+$userId = $respuesta['userId'];
+// $userId = $respuesta['userId'];
+
 
 if ($_SERVER['REQUEST_METHOD'] === 'GET') {
     if (isset($_GET['action']) && $_GET['action'] === 'download') {
@@ -44,6 +47,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'GET') {
         }
         echo json_encode(['success' => false, 'message' => 'File not found']);
     } else {
+        
         $stmt = $db->prepare("SELECT f.*, c.name as category_name FROM files f LEFT JOIN categories c ON f.category_id = c.id WHERE f.user_id = ?");
         $stmt->execute([$userId]);
         $files = $stmt->fetchAll(PDO::FETCH_ASSOC);

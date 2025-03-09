@@ -1,13 +1,22 @@
-import { cargarArchivos,initializeFileManagement } from './fileManagement.js';
+import { cargarArchivos, initializeFileManagement } from './fileManagement.js';
 import { initializeCategories } from './categories.js';
+import { checkAuthentication } from './utils.js';  
 
 document.addEventListener('DOMContentLoaded', async function () {
-    const token = localStorage.getItem('token');
 
-    if (!token) {
+    // Verificar la autenticación del usuario
+    const isAuthenticated = await checkAuthentication();
+    if (!isAuthenticated) {
+       // alert('Usuario no autenticado. Redirigiendo al login...');
         window.location.href = 'index';
         return;
     }
+    else {
+       // alert("acceso concedido...");
+    }
+
+
+
 
     // Función para cargar componentes de la interfaz
     async function cargarInterfaz() {
@@ -37,7 +46,7 @@ document.addEventListener('DOMContentLoaded', async function () {
     await cargarDatos();
 
     // Mostrar el dashboard por defecto
-   await showDashboard();
+    await showDashboard();
 
     // Resto de tus funciones...
     async function cargarModal(modalId, modalFile) {
@@ -64,7 +73,7 @@ document.addEventListener('DOMContentLoaded', async function () {
             const navPlaceholder = document.getElementById('navPlaceholder');
             if (navPlaceholder) {
                 navPlaceholder.innerHTML = menuContent;
-                
+
 
                 document.dispatchEvent(new CustomEvent('navPlaceholderLoaded'));
             }
@@ -84,38 +93,38 @@ document.addEventListener('DOMContentLoaded', async function () {
         if (filesLink) filesLink.addEventListener('click', showFiles);
         if (logoutBtn) logoutBtn.addEventListener('click', logout);
 
-       
+
     }
 
     async function loadDashboardData() {
-        fetch('api/dashboard.php', {
-            method: 'GET',
-            headers: {
-                'Authorization': `Bearer ${token}`,
-            },
-        })
 
-            .then(response => response.json())
-            .then(data => {
-                if (data.success) {
-                    document.getElementById('totalFiles').textContent = data.totalFiles;
-                    document.getElementById('totalCategories').textContent = data.totalCategories;
-                    const recentActivityList = document.getElementById('recentActivity');
-                    recentActivityList.innerHTML = '';
-                    data.recentActivity.forEach(activity => {
-                        const li = document.createElement('li');
-                        li.className = 'list-group-item';
-                        li.textContent = activity;
-                        recentActivityList.appendChild(li);
-                    });
-                } else {
-                    alert('Error al cargar datos del dashboard: ' + data.message);
-                }
-            })
-            .catch(error => {
-                console.error('Error:', error);
-                alert('Error al cargar datos del dashboard');
+
+        try {
+            const response = await fetch('api/dashboard.php', {
+                method: 'GET',
+                credentials: 'include', // Esto asegura que las cookies se envíen con la solicitud
             });
+
+
+            const data = await response.json();
+            if (data.success) {
+                document.getElementById('totalFiles').textContent = data.totalFiles;
+                document.getElementById('totalCategories').textContent = data.totalCategories;
+                const recentActivityList = document.getElementById('recentActivity');
+                recentActivityList.innerHTML = '';
+                data.recentActivity.forEach(activity => {
+                    const li = document.createElement('li');
+                    li.className = 'list-group-item';
+                    li.textContent = activity;
+                    recentActivityList.appendChild(li);
+                });
+            } else {
+                throw new Error(data.message || 'Error al cargar datos del dashboard');
+            }
+        } catch (error) {
+            console.error('Error1:', error);
+            alert('Error al cargar datos del dashboard: ' + error.message);
+        }
     }
 
     async function cargarContenidoDashboard() {
@@ -152,15 +161,15 @@ document.addEventListener('DOMContentLoaded', async function () {
         }
     }
 
-   async function showDashboard() {
+    async function showDashboard() {
         setActiveTab(dashboardLink);
         dashboardContent.style.display = 'block';
         categoriesContent.style.display = 'none';
         filesContent.style.display = 'none';
-      //await  loadDashboardData();
+        //await  loadDashboardData();
     }
 
-  async  function showCategories() {
+    async function showCategories() {
         setActiveTab(categoriesLink);
         //await cargarCategorias();
         dashboardContent.style.display = 'none';
@@ -168,9 +177,9 @@ document.addEventListener('DOMContentLoaded', async function () {
         filesContent.style.display = 'none';
     }
 
-   async function showFiles() {
+    async function showFiles() {
         setActiveTab(filesLink);
-       // await cargarArchivos();
+        // await cargarArchivos();
         dashboardContent.style.display = 'none';
         categoriesContent.style.display = 'none';
         filesContent.style.display = 'block';
@@ -181,19 +190,16 @@ document.addEventListener('DOMContentLoaded', async function () {
         });
         activeLink.classList.add('active');
     }
-   async function logout() {
+    async function logout() {
         try {
-            // Obtener el token actual
-            const token = localStorage.getItem('token');
-
-            // Llamada al servidor para invalidar el token
+            // Llamada al servidor para invalidar la sesión
             const response = await fetch('api/auth.php', {
                 method: 'POST',
                 headers: {
-                    'Content-Type': 'application/json',
-                    'Authorization': `Bearer ${token}`
+                    'Content-Type': 'application/json'
                 },
-                body: JSON.stringify({ action: 'logout' })
+                body: JSON.stringify({ action: 'logout' }),
+                credentials: 'include' // Esto asegura que las cookies se envíen con la solicitud
             });
 
             // Verificar si la respuesta es JSON válido
@@ -217,20 +223,15 @@ document.addEventListener('DOMContentLoaded', async function () {
             alert('Error durante el logout: ' + error.message);
         }
     }
-    function clearSessionData() {
-        // Eliminar el token del almacenamiento local
-        localStorage.removeItem('token');
 
-        // Limpiar el almacenamiento local
+    function clearSessionData() {
+        // Limpiar el almacenamiento local (por si acaso)
         localStorage.clear();
 
         // Limpiar el almacenamiento de sesión
         sessionStorage.clear();
 
-        // Eliminar todas las cookies
-        document.cookie.split(";").forEach(function (c) {
-            document.cookie = c.replace(/^ +/, "").replace(/=.*/, "=;expires=" + new Date().toUTCString() + ";path=/");
-        });
+        // No es necesario eliminar las cookies aquí, ya que el servidor se encargará de invalidar la sesión
     }
     document.addEventListener('navPlaceholderLoaded', () => {
         const logoutBtn = document.getElementById('logoutBtn');

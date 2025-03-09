@@ -8,21 +8,23 @@ $database = new Database();
 $db = $database->getConnection();
 $tokenHandler = new TokenHandler();
 
-$headers = getallheaders();
-$token = str_replace('Bearer ', '', $headers['Authorization']);
-
-$userId = $tokenHandler->validateToken($token);
-if (!$userId) {
+//=== VALIDACIONES DE TOKEN ===
+$token = $_COOKIE['jwt'];
+$respuesta = $tokenHandler->validateToken($token);
+if ($respuesta===false) {
+    logMessage("(dashboard.php)No se pudo validar el token");
     echo json_encode(['success' => false, 'message' => 'Invalid token']);
     exit;
 }
+$userId = $respuesta['userId'];
+// $userId = 12;
 
 if ($_SERVER['REQUEST_METHOD'] === 'GET') {
     // Get total files
     $stmt = $db->prepare("SELECT COUNT(*) as total_files FROM files WHERE user_id = ?");
     $stmt->execute([$userId]);
     $totalFiles = $stmt->fetch(PDO::FETCH_ASSOC)['total_files'];
-
+    logMessage("archivos encontrados:" . $totalFiles);
     // Get total categories
     $stmt = $db->prepare("SELECT COUNT(*) as total_categories FROM categories WHERE user_id = ?");
     $stmt->execute([$userId]);
@@ -38,10 +40,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'GET') {
     $stmt->execute([$userId]);
     $recentActivity = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
-    $formattedActivity = array_map(function($activity) {
+    $formattedActivity = array_map(function ($activity) {
         return "Archivo '{$activity['name']}' subido en la categoría '{$activity['category']}' el {$activity['upload_date']}";
     }, $recentActivity);
-
     echo json_encode([
         'success' => true,
         'totalFiles' => $totalFiles,

@@ -18,29 +18,18 @@ export function initializeFileManagement() {
 }
 
 async function cargarArchivos() {
+  
     console.log('Iniciando carga de archivos...');
 
-    const token = localStorage.getItem('token');
-
     try {
-        /*---- OPCION 1 ----*/
-        //    const response = await fetch(`api/files.php?search=${encodeURIComponent(searchTerm)}&category=${categoryFilter}`, {
-        //         method: 'GET',
-        //         headers: {
-        //             'Authorization': `Bearer ${token}`,
-        //         },
-        //     });
-        /*---- OPCION 2 ----*/
         const response = await fetch(`api/files.php`, {
             method: 'GET',
-            headers: {
-                'Authorization': `Bearer ${token}`,
-            },
+            credentials: 'include' // Esto asegura que las cookies se envíen con la solicitud
         });
 
         const data = await response.json();
 
-        console.log('Respuesta completa del servidor:', data);
+        console.log('Respuesta completa del servidor Files:', data);
 
         if (data.success) {
             let files;
@@ -52,12 +41,7 @@ async function cargarArchivos() {
                 throw new Error('Estructura de archivos no reconocida');
             }
 
-            //console.log('Archivos recibidos:', files);
-            //console.log('Datos de archivos recibidos, llamando a renderizarTableArchivos');
             renderizarTableArchivos(files);
-            //console.log('renderizarTableArchivos completado');
-
-          
         } else {
             throw new Error(data.message || 'Error desconocido');
         }
@@ -65,6 +49,8 @@ async function cargarArchivos() {
         console.error('Error:', error);
         showCustomAlerta('Error al cargar archivos', 'error');
     }
+   
+
 }
 
 function renderizarTableArchivos(files) {
@@ -161,19 +147,13 @@ function renderizarTableArchivos(files) {
 
 
 async function downloadFile(id) {
+   
     try {
-        const token = localStorage.getItem('token');
-        if (!token) {
-            throw new Error('No se encontró el token de autenticación');
-        }
-
         showCustomAlerta('Iniciando descarga...', 'info');
 
         const response = await fetch(`api/files.php?action=download&id=${id}`, {
             method: 'GET',
-            headers: {
-                'Authorization': `Bearer ${token}`
-            }
+            credentials: 'include' // Esto asegura que las cookies se envíen con la solicitud
         });
 
         if (!response.ok) {
@@ -197,17 +177,17 @@ async function downloadFile(id) {
 }
 
 window.deleteFile = async function (id) {
+  
     try {
         const result = await showCustomConfirm('¿Estás seguro de que quieres eliminar este archivo?');
         if (result.isConfirmed) {
-            const token = localStorage.getItem('token');
             const response = await fetch('api/files.php', {
                 method: 'DELETE',
                 headers: {
                     'Content-Type': 'application/json',
-                    'Authorization': `Bearer ${token}`,
                 },
                 body: JSON.stringify({ id: id }),
+                credentials: 'include' // Esto asegura que las cookies se envíen con la solicitud
             });
             const data = await response.json();
             if (data.success) {
@@ -244,13 +224,10 @@ async function uploadFile(file, fileName, categoryId) {
         formData.append('categoryId', categoryId);
 
         try {
-            const token = localStorage.getItem('token');
             const response = await fetch('api/files.php', {
                 method: 'POST',
-                headers: {
-                    'Authorization': `Bearer ${token}`,
-                },
-                body: formData
+                body: formData,
+                credentials: 'include' // Esto asegura que las cookies se envíen con la solicitud
             });
 
             const data = await response.json();
@@ -337,16 +314,15 @@ function openUploadModal() {
     modal.show();
 }
 async function loadCategories() {
-    const token = localStorage.getItem('token');
+  
     try {
         const response = await fetch('api/categories.php', {
             method: 'GET',
-            headers: {
-                'Authorization': `Bearer ${token}`,
-            },
+            credentials: 'include' // Esto asegura que las cookies se envíen con la solicitud
         });
 
         const data = await response.json();
+        console.log("data cargada:",data);
 
         if (data.success) {
             const categorySelect = document.getElementById('fileCategory');
@@ -360,11 +336,11 @@ async function loadCategories() {
             });
         } else {
             console.error('Error al cargar categorías:', data.message);
-            alert('Error al cargar categorías: ' + data.message);
+            showCustomAlerta('Error al cargar categorías: ' + data.message, 'error');
         }
     } catch (error) {
         console.error('Error:', error);
-        alert('Error al cargar categorías');
+        showCustomAlerta('Error al cargar categorías', 'error');
     }
 }
 

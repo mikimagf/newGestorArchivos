@@ -2,10 +2,16 @@
 require_once 'database.php';
 require_once 'token.php';
 require_once 'config.php';
+require_once 'logger.php';
+
 
 header("Content-Type: application/json");
+// Añade esto al principio del archivo, después de los require_once
+//logMessage("Cookies recibidas..: " . print_r($_COOKIE, true));
 
-function sendJsonResponse($data) {
+function sendJsonResponse($data)
+{
+    //header('Content-Type: application/json');
     echo json_encode($data);
     exit;
 }
@@ -32,17 +38,43 @@ try {
 
     switch ($data->action) {
         case 'login':
-            if (!isset($data->username) || !isset($data->password)) {
-                sendJsonResponse(['success' => false, 'message' => 'Datos incompletos']);
-            }
+            $username = $data->username;
+            $password = $data->password;
 
-            $stmt = $db->prepare("SELECT id, PASSWORD FROM users WHERE username = ?");
-            $stmt->execute([$data->username]);
+            // Verificar las credenciales del usuario
+            $stmt = $db->prepare("SELECT id, password, rol FROM users WHERE username = ?");
+            $stmt->execute([$username]);
             $user = $stmt->fetch(PDO::FETCH_ASSOC);
 
-            if ($user && password_verify($data->password, $user['PASSWORD'])) {
-                $token = $tokenHandler->generateToken($user['id']);
-                sendJsonResponse(['success' => true, 'token' => $token]);
+            if ($user && password_verify($password, $user['password'])) {
+                $token = $tokenHandler->generateToken($user['id'], $user['rol']);
+
+                // Guardar la sesión en la base de datos
+                $expiresAt = date('Y-m-d H:i:s', strtotime('+1 hour'));
+                $stmt = $db->prepare("INSERT INTO sessions (user_id, token, expires_at) VALUES (?, ?, ?)");
+                $stmt->execute([$user['id'], $token, $expiresAt]);
+
+                // Configurar la cookie
+                setcookie('jwt', $token, [
+                    'expires' => strtotime('+1 hour'),
+                    'path' => '/',
+                    'domain' => '',
+                    'secure' => false,
+                    'httponly' => true,
+                    'samesite' => 'Strict'
+                ]);
+                // Verificar las cabeceras de respuesta
+                $headers = headers_list();
+                foreach ($headers as $header) {
+                    if (strpos($header, 'Set-Cookie: jwt=') === 0) {
+                        // logMessage("Cabecera Set-Cookie encontrada: " . $header);
+                    }
+                }
+                // logMessage("Cookie JWT configurada: " . $token);
+
+                //sendJsonResponse(['success' => true, 'message' => 'Login exitoso', 'token' => $token]);
+                sendJsonResponse(['success' => true, 'message' => 'Login exitoso']);
+
             } else {
                 sendJsonResponse(['success' => false, 'message' => 'Credenciales inválidas']);
             }
@@ -69,22 +101,69 @@ try {
             break;
 
         case 'logout':
-            $headers = getallheaders();
-            if (!isset($headers['Authorization'])) {
-                sendJsonResponse(['success' => false, 'message' => 'Token no proporcionado']);
-            }
-            $token = str_replace('Bearer ', '', $headers['Authorization']);
-            if ($tokenHandler->invalidateToken($token)) {
-                sendJsonResponse(['success' => true, 'message' => 'Sesión cerrada exitosamente']);
+            
+            $token = $_COOKIE['jwt'];
+            if ($tokenHandler->invalidateToken($token, $db)) {
+                
+                setcookie('jwt', '', time() - 3600, '/', '', true, true);
+                sendJsonResponse(['success' => true, 'message' => 'Sesiones del usuario cerradas exitosamente']);
+
             } else {
                 sendJsonResponse(['success' => false, 'message' => 'Error al cerrar sesión']);
             }
             break;
+        case 'admin_logout_user':
+            // Verificar si el usuario actual es un administrador
+            $adminToken = $_COOKIE['jwt'] ?? null;
+            if (!$adminToken || !$tokenHandler->isAdmin($adminToken)) {
+                sendJsonResponse(['success' => false, 'message' => 'No autorizado']);
+            }
 
+            if (!isset($data->user_id)) {
+                sendJsonResponse(['success' => false, 'message' => 'ID de usuario no proporcionado']);
+            }
+
+            // Eliminar todas las sesiones del usuario especificado
+            $stmt = $db->prepare("DELETE FROM sessions WHERE user_id = ?");
+            if ($stmt->execute([$data->user_id])) {
+                sendJsonResponse(['success' => true, 'message' => 'Sesiones del usuario cerradas exitosamente']);
+            } else {
+                sendJsonResponse(['success' => false, 'message' => 'Error al cerrar las sesiones del usuario']);
+            }
+            break;
+        case 'check_auth':
+            if (!isset($_COOKIE['jwt'])) {
+                sendJsonResponse(['success' => false, 'authenticated' => false, 'message' => 'Cookie de sesión no encontrada']);
+                return;
+            }
+            $token = $_COOKIE['jwt'];
+            // logMessage("Token recibido..: " . $token);
+            $respuesta = $tokenHandler->validateToken($token);
+            $userId = $respuesta['userId'];
+            // logMessage("id usuario>>" . $respuesta['userId']);
+            // logMessage("token>>" . $respuesta['rol']);
+            if ($userId) {
+                $stmt = $db->prepare("SELECT * FROM sessions WHERE user_id = ? AND token = ? AND expires_at > NOW()");
+                $stmt->execute([$userId, $token]);
+                $session = $stmt->fetch(PDO::FETCH_ASSOC);
+
+                if ($session) {
+                    //autenticacion con exito
+                    sendJsonResponse(['success' => true, 'authenticated' => true, 'message' => 'Usuario autenticado']);
+                } else {
+                    setcookie('jwt', '', time() - 3600, '/', '', true, true);
+                    sendJsonResponse(['success' => false, 'authenticated' => false, 'message' => 'Sesion expirada o invalida']);
+                }
+            } else {
+                setcookie('jwt', '', time() - 3600, '/', '', true, true);
+                sendJsonResponse(['success' => false, 'authenticated' => false, 'message' => 'Token invalido o expirado']);
+            }
+            break;
         default:
-            sendJsonResponse(['success' => false, 'message' => 'Acción no reconocida']);
+            sendJsonResponse(['success' => false, 'message' => 'Accion no reconocida']);
             break;
     }
 } catch (Exception $e) {
+    // logMessage("Error catch: " . $e->getMessage());
     sendJsonResponse(['success' => false, 'message' => 'Error del servidor: ' . $e->getMessage()]);
 }

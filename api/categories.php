@@ -1,4 +1,5 @@
 <?php
+error_reporting(E_ERROR | E_PARSE);
 require_once 'database.php';
 require_once 'token.php';
 
@@ -8,19 +9,23 @@ $database = new Database();
 $db = $database->getConnection();
 $tokenHandler = new TokenHandler();
 
-$headers = getallheaders();
-$token = str_replace('Bearer ', '', $headers['Authorization']);
-
-$userId = $tokenHandler->validateToken($token);
-if (!$userId) {
+//=== VALIDACIONES DE TOKEN ===
+$token = $_COOKIE['jwt'];
+logMessage("categorias:".$token);
+$respuesta = $tokenHandler-> validateToken($token);
+if ($respuesta===false) {
+    logMessage("(categories.php)No se pudo validar el token");
     echo json_encode(['success' => false, 'message' => 'Invalid token']);
     exit;
 }
+$userId = $respuesta['userId'];
+//$userId = 12;
 
 if ($_SERVER['REQUEST_METHOD'] === 'GET') {
     $stmt = $db->prepare("SELECT * FROM categories WHERE user_id = ?");
     $stmt->execute([$userId]);
     $categories = $stmt->fetchAll(PDO::FETCH_ASSOC);
+    logMessage("categorias".$categories);
     echo json_encode(['success' => true, 'categories' => $categories]);
 } elseif ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $data = json_decode(file_get_contents("php://input"));
