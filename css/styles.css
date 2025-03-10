@@ -4,6 +4,16 @@ body {
     background-color: #f8f9fa;
 }
 
+.login-logo {
+    width: 120px;
+    height: 120px;
+    margin: 0 auto 20px;
+    display: block;
+    border-radius: 50%;
+    object-fit: cover;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
 /* Navbar */
 .navbar {
     box-shadow: 0 2px 4px rgba(0,0,0,.1);
@@ -71,11 +81,6 @@ body {
 .htCenter .htCore td {
     text-align: center;
 }
-
-/* Modales */
-/* .modal-content {
-    border-radius: 8px;
-} */
 
 /* Botones */
 .btn-primary {
@@ -155,10 +160,11 @@ body {
     font-size: 0.875rem;
 }
 
-/* Ajuste para alinear la paginación y el selector */
 #categoriesContent .d-flex.align-items-center {
     gap: 1rem;
 }
+
+/* Validación de formularios */
 .invalid-tooltip {
     display: none;
     width: 100%;
@@ -171,7 +177,8 @@ body {
 .form-control.is-invalid ~ .invalid-tooltip {
     display: block;
 }
-/* Estilos para el botón de búsqueda de SimpleDatatables */
+
+/* Estilos para SimpleDatatables */
 .dataTable-input {
     font-size: 16px;
     padding: 10px 15px;
@@ -184,39 +191,40 @@ body {
     padding: 15px 0;
 }
 
-/* Ajuste para el contenedor de la tabla */
 .dataTable-wrapper {
     margin-top: 20px;
 }
+
 /* Estilos para el filtro de categorías */
 #categoryFilterContainer {
     background-color: #ffeeee;
-  }
-  /* Estilos para la navegación */
-  .nav-tabs {
+}
+
+/* Estilos para la navegación */
+.nav-tabs {
     border-bottom: 2px solid #dee2e6;
-  }
-  
-  .nav-tabs .nav-link {
+}
+
+.nav-tabs .nav-link {
     border: none;
     color: #495057;
     font-weight: 500;
     padding: 10px 15px;
     transition: all 0.3s ease;
-  }
-  
-  .nav-tabs .nav-link:hover {
+}
+
+.nav-tabs .nav-link:hover {
     border: none;
     color: #007bff;
-  }
-  
-  .nav-tabs .nav-link.active {
+}
+
+.nav-tabs .nav-link.active {
     border: none;
     color: #007bff;
     position: relative;
-  }
-   
-  .nav-tabs .nav-link.active::after {
+}
+ 
+.nav-tabs .nav-link.active::after {
     content: '';
     position: absolute;
     bottom: -2px;
@@ -225,11 +233,4 @@ body {
     height: 2px;
     background-color: #007bff;
     transition: all 0.3s ease;
-  }
-  /* .modal {
-      z-index: 1050 !important;
-  }
-  
-  .modal-backdrop {
-      z-index: 1040 !important;
-  } */
+}

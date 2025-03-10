@@ -20,9 +20,9 @@ $tokenHandler = new TokenHandler();
 //=== VALIDACIONES DE TOKEN ===
 $token = $_COOKIE['jwt'];
 $respuesta = $tokenHandler->validateToken($token);
-if ($respuesta===false) {
+if ($respuesta==false) {
     logMessage("(files.php)No se pudo validar el token");
-    echo json_encode(['success' => false, 'message' => 'Invalid token']);
+    header('location:/index');
     exit;
 }
 $userId = $respuesta['userId'];
@@ -35,12 +35,20 @@ if ($_SERVER['REQUEST_METHOD'] === 'GET') {
         $stmt = $db->prepare("SELECT * FROM files WHERE id = ? AND user_id = ?");
         $stmt->execute([$fileId, $userId]);
         $file = $stmt->fetch(PDO::FETCH_ASSOC);
-
+        $mimeTypes = [
+            'pdf' => 'application/pdf',
+            'zip' => 'application/zip',
+            'rar' => 'application/x-rar-compressed'
+        ];
+        
+        $extension = pathinfo($file['filename'], PATHINFO_EXTENSION);
+        $contentType = $mimeTypes[$extension] ?? 'application/octet-stream';
+        
         if ($file) {
             $filePath = '../uploads/' . $file['filename'];
             if (file_exists($filePath)) {
-                header('Content-Type: application/pdf');
-                header('Content-Disposition: attachment; filename="' . $file['name'] . '.pdf"');
+                header("Content-Type: $contentType");
+                header('Content-Disposition: attachment; filename="' . $file['name'] );
                 readfile($filePath);
                 exit;
             }
@@ -63,9 +71,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'GET') {
         $categoryId = $_POST['categoryId'];
 
         $chunk = $_FILES['file']['tmp_name'];
-        $uploadDir = '../uploads/temp/';
+        $uploadDir = '../uploads/{$userId}/';
         if (!file_exists($uploadDir)) {
-            mkdir($uploadDir, 0777, true);
+            mkdir($uploadDir, 0644, true);
         }
 
         $chunkPath = $uploadDir . $fileName . '.part' . $chunkNumber;
@@ -73,7 +81,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'GET') {
         if (move_uploaded_file($chunk, $chunkPath)) {
             if ($chunkNumber == $totalChunks - 1) {
                 // Último trozo, unir todos los trozos
-                $finalPath = '../uploads/' . $fileName;
+                $finalPath = '../uploads/{$userId}/' . $fileName;
                 $out = fopen($finalPath, 'wb');
 
                 for ($i = 0; $i < $totalChunks; $i++) {
@@ -123,4 +131,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'GET') {
     } else {
         echo json_encode(['success' => false, 'message' => 'File not found']);
     }
+}
+
+function validateFile($file) {
+    $finfo = finfo_open(FILEINFO_MIME_TYPE);
+    $mimeType = finfo_file($finfo, $file['tmp_name']);
+    finfo_close($finfo);
+
+    $allowedTypes = ['application/pdf', 'application/zip', 'application/x-rar-compressed'];
+    return in_array($mimeType, $allowedTypes);
 }

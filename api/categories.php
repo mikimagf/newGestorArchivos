@@ -10,12 +10,12 @@ $db = $database->getConnection();
 $tokenHandler = new TokenHandler();
 
 //=== VALIDACIONES DE TOKEN ===
-$token = $_COOKIE['jwt'];
+$token = $_COOKIE['jwt']??null;
 logMessage("categorias:".$token);
 $respuesta = $tokenHandler-> validateToken($token);
-if ($respuesta===false) {
+if ($respuesta==false) {
     logMessage("(categories.php)No se pudo validar el token");
-    echo json_encode(['success' => false, 'message' => 'Invalid token']);
+    header('location:/index');
     exit;
 }
 $userId = $respuesta['userId'];

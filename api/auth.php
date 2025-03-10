@@ -79,32 +79,44 @@ try {
                 sendJsonResponse(['success' => false, 'message' => 'Credenciales inválidas']);
             }
             break;
+//=== DESCOMENTAR SI SE NECESITA ===
+//---- Quedo comentado para que no se use  ----
+        // case 'register':
+        //     // Verificar reCAPTCHA
+        //     $recaptchaResponse = $data->recaptcha_response;
+        //     $secretKey = 'RECAPTCHA_SECRET_KEY';
+        //     $verifyResponse = file_get_contents('https://www.google.com/recaptcha/api/siteverify?secret=' . $secretKey . '&response=' . $recaptchaResponse);
+        //     $responseData = json_decode($verifyResponse);
 
-        case 'register':
-            if (!isset($data->nombre) || !isset($data->apellido) || !isset($data->email) || !isset($data->username) || !isset($data->password)) {
-                sendJsonResponse(['success' => false, 'message' => 'Datos incompletos']);
-            }
+        //     if (!$responseData->success) {
+        //         sendJsonResponse(['success' => false, 'message' => 'Verificación de reCAPTCHA fallida']);
+        //     }
+        //     if (!isset($data->nombre) || !isset($data->apellido) || !isset($data->email) || !isset($data->username) || !isset($data->password)) {
+        //         sendJsonResponse(['success' => false, 'message' => 'Datos incompletos']);
+        //     }
 
-            $stmt = $db->prepare("SELECT id FROM users WHERE username = ? OR email = ?");
-            $stmt->execute([$data->username, $data->email]);
-            if ($stmt->fetch()) {
-                sendJsonResponse(['success' => false, 'message' => 'El usuario o email ya existe']);
-            }
+        //     $stmt = $db->prepare("SELECT id FROM users WHERE username = ? OR email = ?");
+        //     $stmt->execute([$data->username, $data->email]);
+        //     if ($stmt->fetch()) {
+        //         sendJsonResponse(['success' => false, 'message' => 'El usuario o email ya existe']);
+        //     }
 
-            $hashedPassword = password_hash($data->password, PASSWORD_DEFAULT);
-            $stmt = $db->prepare("INSERT INTO users (nombre, apellido, email, username, PASSWORD) VALUES (?, ?, ?, ?, ?)");
-            if ($stmt->execute([$data->nombre, $data->apellido, $data->email, $data->username, $hashedPassword])) {
-                sendJsonResponse(['success' => true, 'message' => 'Usuario registrado exitosamente']);
-            } else {
-                sendJsonResponse(['success' => false, 'message' => 'Error al registrar el usuario']);
-            }
-            break;
+        //     $hashedPassword = password_hash($data->password, PASSWORD_DEFAULT);
+        //     $stmt = $db->prepare("INSERT INTO users (nombre, apellido, email, username, PASSWORD) VALUES (?, ?, ?, ?, ?)");
+        //     if ($stmt->execute([$data->nombre, $data->apellido, $data->email, $data->username, $hashedPassword])) {
+        //         sendJsonResponse(['success' => true, 'message' => 'Usuario registrado exitosamente']);
+        //     } else {
+        //         sendJsonResponse(['success' => false, 'message' => 'Error al registrar el usuario']);
+        //     }
+        //     break;
 
         case 'logout':
-            
+
             $token = $_COOKIE['jwt'];
-            if ($tokenHandler->invalidateToken($token, $db)) {
-                
+            $respuesta = $tokenHandler->invalidateToken($token, $db);
+            logMessage($respuesta);
+            if ($respuesta !== false) {
+
                 setcookie('jwt', '', time() - 3600, '/', '', true, true);
                 sendJsonResponse(['success' => true, 'message' => 'Sesiones del usuario cerradas exitosamente']);
 

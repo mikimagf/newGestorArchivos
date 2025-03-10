@@ -1,4 +1,4 @@
-import { showCustomAlerta, showCustomConfirm } from "./utils.js";
+import { showCustomAlerta, showCustomConfirm,fetchWithRedirectCheck } from "./utils.js";
 
 let categoriesTable;
 let allCategories = [];
@@ -64,12 +64,8 @@ async function cargarCategorias() {
   console.log("Cargando categorías...");
   
   try {
-    const response = await fetch("api/categories.php", {
+    const response = await fetchWithRedirectCheck("api/categories.php", {
       method: "GET",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      credentials: "include", // Esto asegura que las cookies se envíen con la solicitud
     });
     console.log(response);
 
@@ -315,13 +311,9 @@ async function guardarCategoria() {
     : JSON.stringify({ name: categoryName });
 
   try {
-    const response = await fetch("api/categories.php", {
+    const response = await fetchWithRedirectCheck("api/categories.php", {
       method: method,
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: body,
-      credentials: "include", // Esto asegura que las cookies se envíen con la solicitud
+      body: body
     });
     const data = await response.json();
     if (data.success) {

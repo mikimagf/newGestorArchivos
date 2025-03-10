@@ -1,6 +1,6 @@
 import { cargarArchivos, initializeFileManagement } from './fileManagement.js';
 import { initializeCategories } from './categories.js';
-import { checkAuthentication } from './utils.js';  
+import { checkAuthentication ,fetchWithRedirectCheck} from './utils.js';  
 
 document.addEventListener('DOMContentLoaded', async function () {
 
@@ -171,7 +171,7 @@ document.addEventListener('DOMContentLoaded', async function () {
 
     async function showCategories() {
         setActiveTab(categoriesLink);
-        //await cargarCategorias();
+       // await cargarCategorias();
         dashboardContent.style.display = 'none';
         categoriesContent.style.display = 'block';
         filesContent.style.display = 'none';
@@ -193,34 +193,17 @@ document.addEventListener('DOMContentLoaded', async function () {
     async function logout() {
         try {
             // Llamada al servidor para invalidar la sesión
-            const response = await fetch('api/auth.php', {
+            const response = await fetchWithRedirectCheck('api/auth.php', {
                 method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify({ action: 'logout' }),
-                credentials: 'include' // Esto asegura que las cookies se envíen con la solicitud
+                body: JSON.stringify({ action: 'logout' })
             });
-
-            // Verificar si la respuesta es JSON válido
-            const contentType = response.headers.get("content-type");
-            if (contentType && contentType.indexOf("application/json") !== -1) {
-                const data = await response.json();
-                if (data.success) {
-                    // Proceso de logout exitoso
-                    clearSessionData();
-                    window.location.href = 'index';
-                } else {
-                    throw new Error(data.message || 'Error durante el logout');
-                }
-            } else {
-                // La respuesta no es JSON, manejar como error
-                const textResponse = await response.text();
-                throw new Error(`Respuesta no válida del servidor: ${textResponse}`);
-            }
         } catch (error) {
             console.error('Error durante el logout:', error);
-            alert('Error durante el logout: ' + error.message);
+            // alert('Error durante el logout: ' + rror.message);
+        }finally{
+            
+            clearSessionData();
+            window.location.href = 'index';
         }
     }
 
@@ -230,8 +213,6 @@ document.addEventListener('DOMContentLoaded', async function () {
 
         // Limpiar el almacenamiento de sesión
         sessionStorage.clear();
-
-        // No es necesario eliminar las cookies aquí, ya que el servidor se encargará de invalidar la sesión
     }
     document.addEventListener('navPlaceholderLoaded', () => {
         const logoutBtn = document.getElementById('logoutBtn');

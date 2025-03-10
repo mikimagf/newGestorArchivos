@@ -21,23 +21,35 @@ class TokenHandler
         return $this->encodeToken($payload);
 
     }
-
-    public  function  validateToken($token)
+    public function validateToken($token)
     {
         try {
-            logMessage("(validateToken)token cargado: ".json_encode($token));
-            $payload = $this->decodeToken($token);
+            logMessage("(validateToken)token cargado: " . json_encode($token));
+            // Primero, verificar si el token existe en la base de datos
+            $database = new Database();
+            $db = $database->getConnection();
+
+            $stmt = $db->prepare("SELECT * FROM sessions WHERE token = ? AND expires_at > NOW()");
+            $stmt->execute([$token]);
+            $session = $stmt->fetch(PDO::FETCH_ASSOC);
             
+            if (!$session) {//si no encontramos la sesion
+                logMessage("(validateToken)No se encontró la sesion en la base de datos");
+                return $this->handleInvalidToken();
+            }
+            $payload = $this->decodeToken($token);
+
             // Verificar la expiración
             if (isset($payload->exp) && $payload->exp < time()) {
-                throw new Exception('Token has expired');
+                $this->handleInvalidToken();
+                return false;
             }
             logMessage("Token válido: " . json_encode($payload));
             $userId = $payload->userId;
             $rol = $payload->rol;
-            
-             logMessage("(validateToken)return: userId>>: " . $userId . ", rol>>: " . $rol);
-            
+
+            logMessage("(validateToken)return: userId>>: " . $userId . ", rol>>: " . $rol);
+
             return [
                 'userId' => $userId,
                 'rol' => $rol
@@ -45,18 +57,26 @@ class TokenHandler
 
         } catch (Exception $e) {
             logMessage("(validateToken)No se validó el token: " . $e->getMessage());
+            $this->handleInvalidToken();
             return false;
         }
+    }
+
+    private function handleInvalidToken()
+    {
+        // Eliminar la cookie del token
+        setcookie('jwt', '', time() - 3600, '/', '', true, true);
+        return false;
     }
     public function invalidateToken($token, $db)
     {
         try {
             // Verificar el token
             $payload = $this->validateToken($token);
-            if ($payload===false) {
+            if ($payload === false) {
                 logMessage("Token no válido");
                 return false;
-            }else{
+            } else {
                 // Eliminar la sesión de la base de datos
                 $stmt = $db->prepare("DELETE FROM sessions WHERE token = ?");
                 return $stmt->execute([$token]);
@@ -113,10 +133,6 @@ class TokenHandler
     {
         return bin2hex(random_bytes(16));
     }
-
-
- 
-
 
     public function isAdmin($token)
     {

@@ -1,9 +1,19 @@
-# Permitir acceso directo a archivos en el directorio components y sus subdirectorios
-RewriteRule ^components/ - [L]
+RewriteEngine On
+
+# Permitir acceso directo a archivos y directorios existentes
+RewriteCond %{REQUEST_FILENAME} -f [OR]
+RewriteCond %{REQUEST_FILENAME} -d
+RewriteRule ^ - [L]
+
+# Redirigir de .html a sin extensión
+RewriteCond %{THE_REQUEST} ^[A-Z]{3,9}\ /(.*)\.html\ HTTP/
+RewriteRule ^(.*)\.html$ /$1 [R=301,L]
+
+# Internamente mapear las solicitudes sin extensión a .html
+RewriteCond %{REQUEST_FILENAME}.html -f
+RewriteRule ^(.*)$ $1.html [L]
 
 # Redirigir todas las solicitudes no existentes a index.php
-RewriteCond %{REQUEST_FILENAME} !-f
-RewriteCond %{REQUEST_FILENAME} !-d
 RewriteRule ^(.*)$ index.php [QSA,L]
 
 # Configuración de tipos MIME
@@ -14,14 +24,13 @@ AddType application/javascript .jsla
     # Política de seguridad de contenido (modificada para permitir 'unsafe-inline' y 'unsafe-eval')
     Header set Content-Security-Policy "default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval' https://cdn.jsdelivr.net https://cdn.datatables.net; style-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net https://cdn.datatables.net; img-src 'self' data:; font-src 'self' data:; connect-src 'self' http://localhost https://test.esistemas.com.mx"
 
-    # Configuración CORS (modificada para incluir http://localhost)
-    Header always set Access-Control-Allow-Origin "http://gestorarchivos.local/"
+    # Configuración CORS
+    Header always set Access-Control-Allow-Origin "http://gestorarchivos.local"
     Header always set Access-Control-Allow-Methods "GET, POST, OPTIONS, PUT, DELETE"
     Header always set Access-Control-Allow-Headers "Origin, X-Requested-With, Content-Type, Accept, Authorization"
     Header always set Access-Control-Allow-Credentials "true"
 
     # Manejar solicitudes OPTIONS para CORS preflight
-    RewriteEngine On
     RewriteCond %{REQUEST_METHOD} OPTIONS
     RewriteRule ^(.*)$ $1 [R=200,L]
 </IfModule>
@@ -30,3 +39,11 @@ AddType application/javascript .jsla
 php_flag output_buffering on
 php_value session.cookie_httponly 0
 php_value session.cookie_secure 0
+
+# Configuración de seguridad para el directorio de carga
+#<Directory "/path/to/upload/directory">
+ #   php_flag engine off
+  #  Options -ExecCGI
+   # AddHandler cgi-script .php .pl .py .jsp .asp .htm .shtml .sh .cgi
+    #Header set X-Content-Type-Options "nosniff"
+#</Directory>

@@ -1,4 +1,4 @@
-import { showCustomAlerta, showCustomConfirm } from './utils.js';
+import { showCustomAlerta, showCustomConfirm, updateProgressBar } from './utils.js';
 
 let filesTable;
 let currentPage = 1;
@@ -251,15 +251,45 @@ async function uploadFile(file, fileName, categoryId) {
     const modal = bootstrap.Modal.getInstance(document.getElementById('uploadFileModal'));
     modal.hide();
 }
+// //let progressSwal;
+// // Función para actualizar la barra de progreso
+// function updateProgressBar(percentage) {
+//     // Implementa esta función según tu interfaz de usuario
+//     console.log(`Upload progress: ${percentage}%`);
+//     // Por ejemplo:
+//     // document.getElementById('uploadProgress').style.width = `${percentage}%`;
+//     // document.getElementById('uploadProgress').textContent = `${Math.round(percentage)}%`;
 
-// Función para actualizar la barra de progreso
-function updateProgressBar(percentage) {
-    // Implementa esta función según tu interfaz de usuario
-    console.log(`Upload progress: ${percentage}%`);
-    // Por ejemplo:
-    // document.getElementById('uploadProgress').style.width = `${percentage}%`;
-    // document.getElementById('uploadProgress').textContent = `${Math.round(percentage)}%`;
-}
+//     // if (!progressSwal) {
+//     //     progressSwal = Swal.fire({
+//     //         title: 'Subiendo archivo',
+//     //         html: 'Progreso: <b>0%</b>',
+//     //         allowOutsideClick: false,
+//     //         allowEscapeKey: false,
+//     //         allowEnterKey: false,
+//     //         showConfirmButton: false,
+//     //         didOpen: () => {
+//     //             Swal.showLoading();
+//     //         }
+//     //     });
+//     // }
+
+//     // Swal.update({
+//     //     html: `Progreso: <b>${Math.round(percentage)}%</b>`
+//     // });
+
+//     // if (percentage >= 100) {
+//     //     setTimeout(() => {
+//     //         Swal.update({
+//     //             title: 'Carga completada',
+//     //             html: 'El archivo se ha subido con éxito.',
+//     //             icon: 'success',
+//     //             showConfirmButton: true
+//     //         });
+//     //         progressSwal = null;
+//     //     }, 1000);
+//     // }
+// }
 
 // Reemplazar la función guardarArchivo existente con esta nueva versión
 async function guardarArchivo() {

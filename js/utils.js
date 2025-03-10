@@ -28,7 +28,7 @@ function showCustomAlerta(message, type = "info") {
     error: "error",
     warning: "warning",
     info: "info",
-  };
+  }; 
 
   return Swal.fire({
     icon: iconMap[type] || "info",
@@ -44,6 +44,7 @@ function showCustomAlerta(message, type = "info") {
     },
   });
 }
+
 
 // Función para mostrar confirmación personalizada usando SweetAlert2
 function showCustomConfirm(
@@ -89,26 +90,25 @@ function checkAuthentication() {
       "Content-Type": "application/json",
     },
     body: JSON.stringify({ action: "check_auth" }),
-    credentials: "include", 
+    credentials: "include",
   })
     .then((response) => {
       // console.log('Response status:', response.status);
       // console.log('Response headers:', response.headers);
       // console.log('Response type:', response.type);
-      
+
       if (!response.ok) {
         throw new Error(`HTTP error! status: ${response.status}`);
       }
-      
-      return response.text();  // Cambiamos a .text() en lugar de .json()
+
+      return response.text(); // Cambiamos a .text() en lugar de .json()
     })
     .then((text) => {
-      
       if (!text) {
         //console.log('Response body is empty');
         return false;
       }
-      
+
       try {
         const data = JSON.parse(text);
         //console.log('Parsed JSON data:', data);
@@ -133,8 +133,76 @@ async function requireAuth() {
     window.location.href = "index";
   }
 }
+export async function fetchWithRedirectCheck(url, options = {}) {
+  const response = await fetch(url, { ...options, credentials: "include",  headers: {
+    'Content-Type': 'application/json'
+}, });
+
+  console.log("Respuesta completa:", response);
+  console.log("URL:", response.url);
+  console.log("Status:", response.status);
+  console.log("Status Text:", response.statusText);
+  console.log("redirected:", response.redirected);
+  console.log("Type:", response.type);
+  console.log("Headers:", Object.fromEntries(response.headers));
+
+  if (response.redirected) {
+    console.log("Se detectó una redirección a:", response.url);
+    if (response.url !== window.location.href) {
+      console.log("Redirigiendo a la nueva URL...");
+      window.location.replace(response.url);
+      return null; // Terminamos la ejecución aquí ya que estamos redirigiendo
+    } else {
+      console.log("Ya estamos en la URL de redirección.");
+    }
+  }
+  try {
+    const jsonData = await response.clone().json();
+    console.log("JSON Data:", jsonData);
+    
+  } finally{
+    
+    return response;
+  }
+}
+let progressSwal;
+
+async function updateProgressBar(percentage) {
+    console.log(`Upload progress: ${percentage}%`);
+
+    if (!progressSwal) {
+        progressSwal = Swal.fire({
+            title: 'Subiendo archivo',
+            html: 'Progreso: <b>0%</b>',
+            allowOutsideClick: false,
+            allowEscapeKey: false,
+            allowEnterKey: false,
+            showConfirmButton: false,
+            didOpen: () => {
+                Swal.showLoading();
+            }
+        });
+    }
+
+    Swal.update({
+        html: `Progreso: <b>${Math.round(percentage)}%</b>`
+    });
+
+    if (percentage >= 100) {
+        setTimeout(() => {
+            Swal.update({
+                title: 'Carga completada',
+                html: 'El archivo se ha subido con éxito.',
+                icon: 'success',
+                showConfirmButton: true
+            });
+            progressSwal = null;
+        }, 1000);
+    }
+}
 // Exportar las funciones para que estén disponibles en otros archivos
 export {
+  updateProgressBar,
   showCustomAlerta,
   showCustomConfirm,
   showAlert,
